@@ -1,0 +1,666 @@
+START
+1 - HB87-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+2 - BK63-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+3 - AT83-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+4 - VL26-SRV01 - OnLine
+  ><
+  ><
+------------------
+5 - VL31-SRV01 - OnLine
+  ><
+  ><
+------------------
+6 - NH38-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+7 - VL44-SRV01 - OnLine
+  ><
+  ><
+------------------
+8 - VL81-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+9 - VL25-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+10 - CASH-USS - OnLine
+  >Transport<
+  >UkmService<
+------------------
+11 - HB67-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+12 - VL23-SRV01 - OnLine
+  ><
+  ><
+------------------
+13 - HB68-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+14 - SP65-SRV03 - OnLine
+  ><
+  ><
+------------------
+15 - NH36-SRV01 - OnLine
+  ><
+  ><
+------------------
+16 - LR72-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+17 - VL28-SRV01 - OnLine
+  ><
+  ><
+------------------
+18 - US74-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+19 - NH37-SRV01 - OnLine
+  ><
+  ><
+------------------
+20 - VR34-SRV01 - OnLine
+  ><
+  ><
+------------------
+21 - HB55-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+22 - PG43-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+23 - VL88-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+24 - DG73-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+25 - HB69-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+26 - VL30-SRV01 - OnLine
+  ><
+  ><
+------------------
+27 - HB61-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+28 - HB59-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+29 - DG90-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+30 - US32-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+31 - VL47-SRV01 - OnLine
+  ><
+  ><
+------------------
+32 - LS46-SRV01 - OnLine
+  ><
+  ><
+------------------
+33 - PR42-SRV02 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+34 - HB66-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+35 - CASH-DR - OnLine
+  ><
+  >UkmService<
+------------------
+36 - KA89-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+37 - CH64-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+38 - NH35-SRV01 - OnLine
+  ><
+  ><
+------------------
+39 - VL27-SRV01 - OnLine
+  ><
+  ><
+------------------
+40 - VL29-SRV01 - OnLine
+  ><
+  ><
+------------------
+41 - VL49-SRV01 - OnLine
+  ><
+  ><
+------------------
+42 - HB53-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+43 - HB60-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+44 - VL79-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+45 - CASH-USCH - OnLine
+  >Transport<
+  >UkmService<
+------------------
+46 - CASH-VLK - OnLine
+  >Transport<
+  >UkmService<
+------------------
+47 - BK41-SRV01 - OnLine
+  ><
+  ><
+------------------
+48 - VL21-SRV01 - OnLine
+  ><
+  ><
+------------------
+49 - VA80-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+50 - AR70-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+51 - NH91-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+52 - VL48-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+53 - DU71-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+54 - NH86-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+55 - IS78-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+56 - VL82-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+57 - VR77-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+58 - SP57-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+59 - US84-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+60 - VL33-SRV01 - OnLine
+  ><
+  ><
+------------------
+61 - VL62-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+62 - VL85-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+63 - VL20-SRV32 - OnLine
+  ><
+  ><
+------------------
+64 - VL20-SRV05 - OnLine
+  ><
+  ><
+------------------
+65 - VL20-SRV04 - OnLine
+  ><
+  ><
+------------------
+66 - VL20-SRV28 - OnLine
+  ><
+  >UkmService<
+------------------
+67 - VL20-SRV21 - OnLine
+  ><
+  ><
+------------------
+68 - VL20-SRV14 - OnLine
+  ><
+  ><
+------------------
+69 - VL20-WS500 - OnLine
+  ><
+  ><
+------------------
+70 - VL20-SRV26 - OnLine
+  ><
+  ><
+------------------
+71 - VL20-ESET - OnLine
+  ><
+  ><
+------------------
+72 - DBASE-FL - OnLine
+  ><
+  ><
+------------------
+73 - VL20-SCCM - OnLine
+  ><
+  ><
+------------------
+74 - VL20-SRV09 - OnLine
+  ><
+  ><
+------------------
+75 - VL20-SRV34 - OffLine
+------------------
+76 - VL20-SRV10 - OnLine
+  ><
+  ><
+------------------
+77 - DC - OnLine
+  ><
+  ><
+------------------
+78 - VL20-SRV19 - OnLine
+  ><
+  ><
+------------------
+79 - VL20-SRV11 - OnLine
+  ><
+  ><
+------------------
+80 - VL20-SRV22 - OnLine
+  ><
+  ><
+------------------
+81 - SERVER1 - OnLine
+Get-Service : Невозможно открыть диспетчер управления службами на компьютере 'SERVER1'. Возможно, для этой операции требуютс
+я другие полномочия.
+C:\Users\sameza\Desktop\identityServer\identityServer.ps1:34 знак:28
++                 $servise = Get-Service -computername $item.Name | Where-Object { ...
++                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [Get-Service], InvalidOperationException
+    + FullyQualifiedErrorId : System.InvalidOperationException,Microsoft.PowerShell.Commands.GetServiceCommand
+ 
+  ><
+Get-Service : Невозможно открыть диспетчер управления службами на компьютере 'SERVER1'. Возможно, для этой операции требуютс
+я другие полномочия.
+C:\Users\sameza\Desktop\identityServer\identityServer.ps1:34 знак:28
++                 $servise = Get-Service -computername $item.Name | Where-Object { ...
++                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [Get-Service], InvalidOperationException
+    + FullyQualifiedErrorId : System.InvalidOperationException,Microsoft.PowerShell.Commands.GetServiceCommand
+ 
+  ><
+------------------
+82 - VL20-SRV17 - OnLine
+  ><
+  ><
+------------------
+83 - VL20-SRV24 - OffLine
+------------------
+84 - VL20-SRV35 - OnLine
+  ><
+  ><
+------------------
+85 - VL20-SRV01 - OnLine
+  ><
+  ><
+------------------
+86 - VL20-SRV06 - OnLine
+  ><
+  ><
+------------------
+87 - VL20-SRV30 - OnLine
+  ><
+  ><
+------------------
+88 - VL20-SRV36 - OnLine
+  ><
+  ><
+------------------
+89 - VL20-SRV31 - OnLine
+  ><
+  ><
+------------------
+90 - VL20-SRV07 - OffLine
+------------------
+91 - VL20-SRV13 - OnLine
+  ><
+  ><
+------------------
+92 - VL20-SRV33 - OnLine
+  ><
+  ><
+------------------
+93 - VL20-SRV27 - OnLine
+  ><
+  ><
+------------------
+94 - VL20-SRV37 - OnLine
+  ><
+  ><
+------------------
+95 - VL20-SRV03 - OnLine
+  ><
+  ><
+------------------
+96 - zabbix4 - OnLine
+Get-Service : Невозможно открыть диспетчер управления службами на компьютере 'zabbix4'. Возможно, для этой операции требуютс
+я другие полномочия.
+C:\Users\sameza\Desktop\identityServer\identityServer.ps1:34 знак:28
++                 $servise = Get-Service -computername $item.Name | Where-Object { ...
++                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [Get-Service], InvalidOperationException
+    + FullyQualifiedErrorId : System.InvalidOperationException,Microsoft.PowerShell.Commands.GetServiceCommand
+ 
+  ><
+Get-Service : Невозможно открыть диспетчер управления службами на компьютере 'zabbix4'. Возможно, для этой операции требуютс
+я другие полномочия.
+C:\Users\sameza\Desktop\identityServer\identityServer.ps1:34 знак:28
++                 $servise = Get-Service -computername $item.Name | Where-Object { ...
++                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [Get-Service], InvalidOperationException
+    + FullyQualifiedErrorId : System.InvalidOperationException,Microsoft.PowerShell.Commands.GetServiceCommand
+ 
+  ><
+------------------
+97 - VL20-SRV16 - OnLine
+  ><
+  ><
+------------------
+98 - VL20-SRV23 - OnLine
+  ><
+  ><
+------------------
+99 - VL20-SRV29 - OnLine
+  ><
+  ><
+------------------
+100 - VL20-SRV12 - OnLine
+  ><
+  ><
+------------------
+101 - VL20-SRV18 - OnLine
+  ><
+  ><
+------------------
+102 - VL22-SRV01 - OffLine
+------------------
+103 - VL48-SRV03 - OffLine
+------------------
+104 - AT83-WS100 - OnLine
+  ><
+  ><
+------------------
+105 - VL31-SRV02 - OnLine
+  ><
+  ><
+------------------
+106 - VL31-SRV03 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+107 - DBASE-HB - OnLine
+  ><
+  ><
+------------------
+108 - VL49-SRV03 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+109 - VL49-SRV02 - OnLine
+  ><
+  ><
+------------------
+110 - LS46-SRV03 - OnLine
+  ><
+  >UkmService<
+------------------
+111 - LS46-SRV02 - OnLine
+  >Transport<
+  ><
+------------------
+112 - SP65-SRV01 - OnLine
+  >Transport<
+  ><
+------------------
+113 - SP65-SRV02 - OnLine
+  ><
+  >UkmService<
+------------------
+114 - US58-SRV02 - OffLine
+------------------
+115 - US58-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+116 - VL28-SRV02 - OnLine
+  ><
+  ><
+------------------
+117 - VL28-SRV03 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+118 - VL30-SRV02 - OnLine
+  >Transport<
+  ><
+------------------
+119 - VL30-SRV03 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+120 - DBASE-FS - OnLine
+  >Transport<
+  ><
+------------------
+121 - PR42-SRV01 - OnLine
+  >Transport<
+  ><
+------------------
+122 - HB51-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+123 - HB52-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+124 - HB54-SRV01 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+125 - VL23-SRV02 - OnLine
+  ><
+  ><
+------------------
+126 - VL23-SRV03 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+127 - HB60-SRV03 - OnLine
+  ><
+  ><
+------------------
+128 - VL33-SRV03 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+129 - VL21-SRV02 - OnLine
+  ><
+  ><
+------------------
+130 - VL21-SRV03 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+131 - DBASE-USCH - OnLine
+  ><
+  ><
+------------------
+132 - VL27-SRV02 - OnLine
+  ><
+  ><
+------------------
+133 - VL27-SRV03 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+134 - DBASE-USS - OnLine
+  ><
+  ><
+------------------
+135 - NH37-SRV03 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+136 - NH37-SRV02 - OnLine
+  ><
+  ><
+------------------
+137 - VL29-SRV02 - OnLine
+  ><
+  ><
+------------------
+138 - VL29-SRV03 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+139 - NH36-SRV03 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+140 - NH36-SRV02 - OnLine
+  ><
+  ><
+------------------
+141 - DBASE-NP - OnLine
+  ><
+  ><
+------------------
+142 - CASH-NP - OffLine
+------------------
+143 - NH35-SRV03 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+144 - NH35-SRV02 - OnLine
+  ><
+  ><
+------------------
+145 - dbase-nhm - OnLine
+  >Transport<
+  ><
+------------------
+146 - VR34-SRV03 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+147 - VR34-SRV02 - OnLine
+  ><
+  ><
+------------------
+148 - DBASE-VL - OnLine
+  ><
+  ><
+------------------
+149 - DBASE-VLK - OnLine
+  ><
+  ><
+------------------
+150 - BK41-SRV02 - OnLine
+  ><
+  ><
+------------------
+151 - BK41-SRV03 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+152 - DBASE-GH - OnLine
+  ><
+  ><
+------------------
+153 - VL26-SRV02 - OnLine
+  ><
+  ><
+------------------
+154 - VL26-SRV03 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+155 - VL82-WS100 - OnLine
+  ><
+  ><
+------------------
+156 - US84-WS100 - OnLine
+  ><
+  ><
+------------------
+157 - VL47-SRV03 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+158 - VL47-SRV02 - OnLine
+  ><
+  ><
+------------------
+159 - VL44-SRV02 - OffLine
+------------------
+160 - VL44-SRV03 - OnLine
+  >Transport<
+  >UkmService<
+------------------
+161 - VL44-SRV04 - OnLine
+  ><
+  ><
+------------------
+162 - VL85-WS100 - OnLine
+  ><
+  ><
+------------------
+END
