@@ -1,4 +1,4 @@
-# Ставит зелёные галки напроти ключей
+# РЎС‚Р°РІРёС‚ Р·РµР»С‘РЅС‹Рµ РіР°Р»РєРё РЅР°РїСЂРѕС‚Рё РєР»СЋС‡РµР№
 #
 # usbrdrltsh.exe -help
 
@@ -32,7 +32,7 @@ function findValue ([string]$str, [string]$findKey)
             }
         }
         
-        $result = $str.Substring($pos1+1, $str_len-$pos1-1) # последняя пара ключ:значение в строке
+        $result = $str.Substring($pos1+1, $str_len-$pos1-1) # РїРѕСЃР»РµРґРЅСЏСЏ РїР°СЂР° РєР»СЋС‡:Р·РЅР°С‡РµРЅРёРµ РІ СЃС‚СЂРѕРєРµ
         
         $pos = $result.indexOf($findKey)
         if ($pos -gt -1)
@@ -67,7 +67,7 @@ $srv_flg = 0
 
 ForEach($str in $res)
 {    
-    # Получаем имя сервера
+    # РџРѕР»СѓС‡Р°РµРј РёРјСЏ СЃРµСЂРІРµСЂР°
     $tmp_str = 'USB server at' 
     $pos = $str.indexOf($tmp_str)
     if ($pos -gt -1)
@@ -79,7 +79,7 @@ ForEach($str in $res)
         'Server name: ' +$server_u
     }
 
-    # Получаем имя устройства
+    # РџРѕР»СѓС‡Р°РµРј РёРјСЏ СѓСЃС‚СЂРѕР№СЃС‚РІР°
     $pos = $str.indexOf($tmp_str)
     if ($str[9] -eq ':')
     {
@@ -87,7 +87,7 @@ ForEach($str in $res)
         'Device name: '+$dev_name
     }
 
-    # Параметры устройства Vid/Pid/Serial
+    # РџР°СЂР°РјРµС‚СЂС‹ СѓСЃС‚СЂРѕР№СЃС‚РІР° Vid/Pid/Serial
     $tmp_str = 'Vid:' 
     $pos = $str.indexOf($tmp_str)
     if ($pos -gt -1)
@@ -106,7 +106,7 @@ ForEach($str in $res)
     $pos = $str.indexOf($tmp_str)
     if ($pos -gt -1)
     {
-        if ($srv_flg -eq 1) # Параметры сервера 
+        if ($srv_flg -eq 1) # РџР°СЂР°РјРµС‚СЂС‹ СЃРµСЂРІРµСЂР° 
         {
             $Mode_srv   = findValue $str 'Mode'
             $Status_srv = findValue $str 'Status'
@@ -114,7 +114,7 @@ ForEach($str in $res)
             'Status: ' + $Status_srv
             $srv_flg = 0
         }
-        else # Параметры устройства
+        else # РџР°СЂР°РјРµС‚СЂС‹ СѓСЃС‚СЂРѕР№СЃС‚РІР°
         {
             #$str
             $Mode_dev   = findValue $str 'Mode'
@@ -122,7 +122,7 @@ ForEach($str in $res)
             'Mode: '   + $Mode_dev
             'Status: ' + $Status_dev
 
-            if ($Status_u -eq 'available for connection')
+            if ($Status_dev -eq 'available for connection')
             {
                 $connect_device = .\usbrdrltsh.exe -connect -server $server_u -vid $vid_dev -pid $pid_dev
                 $connect_device
