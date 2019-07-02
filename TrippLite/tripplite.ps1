@@ -7,7 +7,7 @@ Clear-Host
 # 	Server=zabbix
 # 	ServerActive=zabbix
 # 	EnableRemoteCommands=1
-# 	UserParameter=winpower[*],PowerShell.exe -nologo C:\scripts\tripplite.ps1 $1
+# 	UserParameter=tripplite[*],PowerShell.exe -nologo C:\scripts\tripplite.ps1 $1
 
 # zabbix conf
 # key: tripplite[<param>] exmpl: tripplite[device_mode]
@@ -81,7 +81,7 @@ foreach($line in Get-Content $fname)
 
 if (($sPos -gt 0) -and  ($ePos -gt 0))
 {
-    $params = @{} # ассоциативный массив ключ=значение
+    $params = @{} # Г Г±Г±Г®Г¶ГЁГ ГІГЁГўГ­Г»Г© Г¬Г Г±Г±ГЁГў ГЄГ«ГѕГ·=Г§Г­Г Г·ГҐГ­ГЁГҐ
 
     $str = $line.Substring($sPos, $ePos -$sPos +1)
 
