@@ -67,8 +67,8 @@ $terms+='communication_protocol'
 $terms+='communication_port'
 $terms+='operating_system'
 
-$fname = 'C:\Users\sameza\Desktop\TrippLite\padlog1.dat'
-#$fname = 'C:\Program Files (x86)\TrippLite\PowerAlert\data\padlog1.dat'
+#$fname = 'C:\Users\sameza\Desktop\TrippLite\padlog1.dat'
+$fname = 'C:\Program Files (x86)\TrippLite\PowerAlert\data\padlog1.dat'
 
 $sPos = 0
 $ePos = 0
@@ -81,7 +81,7 @@ foreach($line in Get-Content $fname)
 
 if (($sPos -gt 0) -and  ($ePos -gt 0))
 {
-    $params = @{} # àññîöèàòèâíûé ìàññèâ êëþ÷=çíà÷åíèå
+    $params = @{} # ассоциативный массив ключ=значение
 
     $str = $line.Substring($sPos, $ePos -$sPos +1)
 
@@ -98,18 +98,27 @@ if (($sPos -gt 0) -and  ($ePos -gt 0))
     {
         if ($str[$i] -eq ',')
         {
-            $params[$terms[$pIndex]] = $str.Substring($sPos, $i -$sPos)
+            $param = $str.Substring($sPos, $i -$sPos)
+            $param = $param.TrimEnd('VA')
+            $param = $param.TrimEnd('V')
+            $param = $param.TrimEnd('A')
+            $param = $param.TrimEnd('%')
+            $param = $param.TrimEnd('W')
+            $param = $param.TrimEnd('Years')
+            $param = $param.TrimEnd('Hz')
+            #$param = $param.TrimEnd('Second') # ??? TrimEnd
+
+            $params[$terms[$pIndex]] = $param.Trim(' ')
             #
             $sPos = $i +1
             $pIndex++
         }
     }
 
-    <#
-    $params
-    $testArg0 = 'time'
-    $params[$testArg0]
-    #>
+    
+    #$params
+    #$testArg0 = 'input_voltage'
+    #$params[$testArg0]
 
     $params[$args[0]]
 }
