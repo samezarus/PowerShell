@@ -1,5 +1,7 @@
 # for TrippLite ups
-# srvice 'C:\Program Files (x86)\TrippLite\PowerAlert\engine\panms.exe' create log 'C:\Program Files (x86)\TrippLite\PowerAlert\data\padlog1.dat'
+
+# srvice 'C:\Program Files (x86)\TrippLite\PowerAlert\engine\panms.exe' (PowerAlert Agent) 
+# create log 'C:\Program Files (x86)\TrippLite\PowerAlert\data\padlog1.dat'
 
 Clear-Host
 
