@@ -1,7 +1,5 @@
 # for TrippLite ups
-
-# srvice 'C:\Program Files (x86)\TrippLite\PowerAlert\engine\panms.exe' (PowerAlert Agent) 
-# create log 'C:\Program Files (x86)\TrippLite\PowerAlert\data\padlog1.dat'
+# srvice 'C:\Program Files (x86)\TrippLite\PowerAlert\engine\panms.exe' create log 'C:\Program Files (x86)\TrippLite\PowerAlert\data\padlog1.dat'
 
 Clear-Host
 
@@ -75,55 +73,55 @@ $fname = 'C:\Program Files (x86)\TrippLite\PowerAlert\data\padlog1.dat'
 $sPos = 0
 $ePos = 0
 
-foreach($line in Get-Content $fname) 
+if ((Test-Path $fname) -eq $True)
 {
-    $sPos = $line.LastIndexOf(', , , ,')
-    $ePos = $line.LastIndexOf('),')
-}
-
-if (($sPos -gt 0) -and  ($ePos -gt 0))
-{
-    $params = @{} # ассоциативный массив ключ=значение
-
-    $str = $line.Substring($sPos, $ePos -$sPos +1)
-
-    $params['date'] = $line.Substring($sPos -24, 8)
-    $params['time'] = $line.Substring($sPos -12, 6)
-
-    $str+= ','
-
-    $sPos = 0
-    $pIndex = 0
-    
-
-    For ($i=0; $i -le $str.Length; $i++)
+    foreach($line in Get-Content $fname) 
     {
-        if ($str[$i] -eq ',')
-        {
-            $param = $str.Substring($sPos, $i -$sPos)
-            $param = $param.TrimEnd('VA')
-            $param = $param.TrimEnd('V')
-            $param = $param.TrimEnd('A')
-            $param = $param.TrimEnd('%')
-            $param = $param.TrimEnd('W')
-            $param = $param.TrimEnd('Years')
-            $param = $param.TrimEnd('Hz')
-            #$param = $param.TrimEnd('Second') # ??? TrimEnd
-
-            $params[$terms[$pIndex]] = $param.Trim(' ')
-            #
-            $sPos = $i +1
-            $pIndex++
-        }
+        $sPos = $line.LastIndexOf(', , , ,')
+        $ePos = $line.LastIndexOf('),')
     }
 
+    if (($sPos -gt 0) -and  ($ePos -gt 0))
+    {
+        $params = @{} # ассоциативный массив ключ=значение
+
+        $str = $line.Substring($sPos, $ePos -$sPos +1)
+
+        $params['date'] = $line.Substring($sPos -24, 8)
+        $params['time'] = $line.Substring($sPos -12, 6)
+
+        $str+= ','
+
+        $sPos = 0
+        $pIndex = 0
     
-    #$params
-    #$testArg0 = 'input_voltage'
-    #$params[$testArg0]
 
-    $params[$args[0]]
+        For ($i=0; $i -le $str.Length; $i++)
+        {
+            if ($str[$i] -eq ',')
+            {
+                $param = $str.Substring($sPos, $i -$sPos)
+                $param = $param.TrimEnd('VA')
+                $param = $param.TrimEnd('V')
+                $param = $param.TrimEnd('A')
+                $param = $param.TrimEnd('%')
+                $param = $param.TrimEnd('W')
+                $param = $param.TrimEnd('Years')
+                $param = $param.TrimEnd('Hz')
+                #$param = $param.TrimEnd('Second') # ??? TrimEnd
+
+                $params[$terms[$pIndex]] = $param.Trim(' ')
+                #
+                $sPos = $i +1
+                $pIndex++
+            }
+        }
+
+    
+        #$params
+        #$testArg0 = 'input_voltage'
+        #$params[$testArg0]
+
+        $params[$args[0]]
+    }
 }
-
-
-
