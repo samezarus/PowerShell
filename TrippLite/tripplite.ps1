@@ -122,6 +122,22 @@ if ((Test-Path $fname) -eq $True)
         #$testArg0 = 'input_voltage'
         #$params[$testArg0]
 
-        $params[$args[0]]
+        
+        if ($args.Count -gt 0)
+        {
+            $params[$args[0]]
+        }
+        else
+        {
+            $params['date']
+            $params['time']
+
+            $pIndex = 0
+            For ($i=0; $i -le $terms.Count -1; $i++)
+            {
+                $params[$terms[$pIndex]]
+                $pIndex++
+            }
+        }
     }
 }
