@@ -9,8 +9,8 @@ Clear
 # zabbix conf
 # key: IntelRaidConsole[<param>,<param>] exmpl: IntelRaidConsole[0,physicalDevicesDisks]
 
-# $args[0] - èíäåêñ ðåéä êîíòðîëëåðà
-# $args[1] - êëþ÷ äëÿ ïîëó÷åíèÿ äàííûõ ($terms)
+# $args[0] - индекс рейд контроллера ($raidIndex)
+# $args[1] - ключ для получения данных ($terms)
 
 function getValue ($str)
 {
