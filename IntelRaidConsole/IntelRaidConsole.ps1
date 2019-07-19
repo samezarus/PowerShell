@@ -4,7 +4,7 @@ Clear
 # 	Server=zabbix
 # 	ServerActive=zabbix
 # 	EnableRemoteCommands=1
-# 	UserParameter=IntelRaidConsole[*],PowerShell.exe -nologo C:\Script\IntelRaidConsole\IntelRaidConsole.ps1 $1 $2
+# 	UserParameter=IntelRaidConsole[*],PowerShell.exe -nologo C:\Scripts\IntelRaidConsole\IntelRaidConsole.ps1 $1 $2
 
 # zabbix conf
 # key: IntelRaidConsole[<param>,<param>] exmpl: IntelRaidConsole[0,physicalDevicesDisks]
