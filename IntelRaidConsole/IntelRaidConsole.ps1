@@ -4,13 +4,13 @@ Clear
 # 	Server=zabbix
 # 	ServerActive=zabbix
 # 	EnableRemoteCommands=1
-# 	UserParameter=IntelRaidConsole[*,*],PowerShell.exe -nologo C:\Script\IntelRaidConsole\IntelRaidConsole.ps1 $1 $2
+# 	UserParameter=IntelRaidConsole[*],PowerShell.exe -nologo C:\Script\IntelRaidConsole\IntelRaidConsole.ps1 $1 $2
 
 # zabbix conf
 # key: IntelRaidConsole[<param>,<param>] exmpl: IntelRaidConsole[0,physicalDevicesDisks]
 
-# $args[0] - индекс рейд контроллера
-# $args[1] - ключ для получения данных ($terms)
+# $args[0] - ГЁГ­Г¤ГҐГЄГ± Г°ГҐГ©Г¤ ГЄГ®Г­ГІГ°Г®Г«Г«ГҐГ°Г 
+# $args[1] - ГЄГ«ГѕГ· Г¤Г«Гї ГЇГ®Г«ГіГ·ГҐГ­ГЁГї Г¤Г Г­Г­Г»Гµ ($terms)
 
 function getValue ($str)
 {
@@ -31,8 +31,8 @@ $params = @{}
 $terms += 'virtualDrivesCount'
 $terms += 'virtualDrivesDegraded'
 $terms += 'virtualDrivesOffline'
-$terms += 'physicalDevicesCount'         # Количество слотов под диски
-$terms += 'physicalDevicesDisks'         # Количество вставленных дисков
+$terms += 'physicalDevicesCount'         # ГЉГ®Г«ГЁГ·ГҐГ±ГІГўГ® Г±Г«Г®ГІГ®Гў ГЇГ®Г¤ Г¤ГЁГ±ГЄГЁ
+$terms += 'physicalDevicesDisks'         # ГЉГ®Г«ГЁГ·ГҐГ±ГІГўГ® ГўГ±ГІГ ГўГ«ГҐГ­Г­Г»Гµ Г¤ГЁГ±ГЄГ®Гў
 $terms += 'physicalDevicesCriticalDisks'
 $terms += 'physicalDevicesFailedDisks'
 
@@ -43,7 +43,7 @@ if ($args.Count -eq 2)
 }
 
 $fileLog   = $PSScriptRoot+'\raid.log'
-$app       = $PSScriptRoot+'\CmdTool2_64.exe' # Поставить галку - Выполнять от имени администратора
+$app       = $PSScriptRoot+'\CmdTool2_64.exe' # ГЏГ®Г±ГІГ ГўГЁГІГј ГЈГ Г«ГЄГі - Г‚Г»ГЇГ®Г«Г­ГїГІГј Г®ГІ ГЁГ¬ГҐГ­ГЁ Г Г¤Г¬ГЁГ­ГЁГ±ГІГ°Г ГІГ®Г°Г 
 $param     = '-AdpAllinfo -a'+$raidIndex+' -AppLogFile ' + $fileLog
 
 if ((Test-Path $fileLog) -eq $True)
