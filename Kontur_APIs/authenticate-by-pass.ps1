@@ -6,11 +6,14 @@
 
 Clear
 
-$ofd_api_key  = 'xxxxxxxxxx' # ключ интегратора
+$ofd_api_key  = 'xxx' # ключ интегратора
 $cookieDomain = '.kontur.ru'
 
-$mail = 'xxxxxxxxxx'
-$pass = 'xxxxxxxxxx'
+$endPoint = 'https://ofd-project.kontur.ru:11002/' # тестовая площадка
+#$endPoint = 'https://ofd-api.kontur.ru/'           # "боевая" площадка
+
+$mail = 'xxx'
+$pass = 'xxx'
 
 Function getSID ($str)
 {
@@ -50,8 +53,6 @@ if ($Request.StatusCode -eq '200')
     $sid = getSID $Request.Content
     #'SID: ' + $sid
 
-    # ----------------------------------------------------
-
     # кука с SID-ом
     $SIDCookie        = New-Object System.Net.Cookie 
     $SIDCookie.Name   = 'auth.sid'
@@ -59,10 +60,14 @@ if ($Request.StatusCode -eq '200')
     $SIDCookie.Domain = $cookieDomain
     $WebSession.Cookies.Add($SIDCookie)
 
-    $URL = 'https://ofd-project.kontur.ru:11002/v2/organizations'
+    # --------------------------------------------------------------------------
 
+    # метод organizations
+    $URL = $endPoint + 'v2/organizations'
     $Request = Invoke-WebRequest -Uri $URL -WebSession $WebSession -Method 'GET'
-
-    #$Request | format-list -property *
-    $Request.Content
+    if ($Request.StatusCode -eq '200')
+    {    
+        #$Request | format-list -property *
+        $Request.Content
+    }
 }
