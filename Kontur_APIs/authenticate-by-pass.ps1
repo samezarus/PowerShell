@@ -68,6 +68,7 @@ if ($Request.StatusCode -eq '200')
     if ($Request.StatusCode -eq '200')
     {    
         #$Request | format-list -property *
-        $Request.Content
+        $Request
+        #$Request.Content
     }
 }
