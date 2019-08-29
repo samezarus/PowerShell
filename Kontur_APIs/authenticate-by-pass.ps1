@@ -9,8 +9,8 @@ Clear
 $ofd_api_key  = 'xxx' # ключ интегратора
 $cookieDomain = '.kontur.ru'
 
-$endPoint = 'https://ofd-project.kontur.ru:11002/' # тестовая площадка
-#$endPoint = 'https://ofd-api.kontur.ru/'           # "боевая" площадка
+#$endPoint = 'https://ofd-project.kontur.ru:11002/' # тестовая площадка
+$endPoint = 'https://ofd-api.kontur.ru/'           # "боевая" площадка
 
 $mail = 'xxx'
 $pass = 'xxx'
