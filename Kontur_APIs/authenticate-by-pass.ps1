@@ -70,5 +70,8 @@ if ($Request.StatusCode -eq '200')
         #$Request | format-list -property *
         $Request
         #$Request.Content
+        
+        #$json = $Request.Content | ConvertFrom-Json
+        #'id: ' + $json.id
     }
 }
