@@ -15,7 +15,7 @@ foreach ($array_item in $ou_array)
     
     foreach ($item in $pc_list)
     {
-        $srv_count +=1
+        $ws_count +=1
 
         $osStaus = 'OnLine'
 
