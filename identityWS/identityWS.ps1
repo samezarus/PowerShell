@@ -25,7 +25,7 @@ foreach ($array_item in $ou_array)
 
         if ($pc_status -eq $True) 
         {
-            $srv_count.ToString() +' - '+ $pcName + ' - ' +$osStaus
+            $ws_count.ToString() +' - '+ $pcName + ' - ' +$osStaus
             
             $disk = Get-WmiObject Win32_LogicalDisk -ComputerName $pcName -Filter "DeviceID='C:'" | Select-Object Size,FreeSpace
             '  C size: ' + '{0:N2} GB' -f ($disk.Size / 1gb)
@@ -42,7 +42,7 @@ foreach ($array_item in $ou_array)
         else
         {
             $osStaus = 'OFFLine'
-            $srv_count.ToString() +' - '+ $pcName + ' - ' + $osStaus
+            $ws_count.ToString() +' - '+ $pcName + ' - ' + $osStaus
 
             $osStaus
         }
