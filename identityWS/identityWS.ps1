@@ -43,8 +43,6 @@ foreach ($array_item in $ou_array)
         {
             $osStaus = 'OFFLine'
             $ws_count.ToString() +' - '+ $pcName + ' - ' + $osStaus
-
-            $osStaus
         }
 
 
