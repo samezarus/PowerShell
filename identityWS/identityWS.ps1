@@ -3,26 +3,11 @@
 #
 Clear
 
-$log = $PSScriptRoot +'\log.html'
-
-# ------------------------------------------------------------------------------------------------
-Function toLog ($str)
-{
-    Add-Content -Path $log -Value $str
-}
-
-# ------------------------------------------------------------------------------------------------
-
 'START'
 
 $ou_array = 'OU=vl20 Vladivostok Derevenskaya14,OU=Office,OU=Ws,DC=severotorg,DC=local'
 
 $ws_count = 0
-
-$colorOn  ='#99FF99'
-$colorOff ='#FF9999'
-
-
 
 foreach ($array_item in $ou_array)
 {
@@ -69,7 +54,3 @@ foreach ($array_item in $ou_array)
 }
 
 'END'
-
-toLog '</table>'
-toLog '</body>'
-toLog '</html>'
