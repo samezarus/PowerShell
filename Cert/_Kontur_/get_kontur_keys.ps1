@@ -1,18 +1,18 @@
 # sameza
 #
-# Скрипт выгружает каждый ключ KONTUR в отдедьный файл.
-# Запустить из под учётки где "варятся" и актуализируются все сертификаты
+# РЎРєСЂРёРїС‚ РІС‹РіСЂСѓР¶Р°РµС‚ РєР°Р¶РґС‹Р№ РєР»СЋС‡ KONTUR РІ РѕС‚РґРµРґСЊРЅС‹Р№ С„Р°Р№Р».
+# Р—Р°РїСѓСЃС‚РёС‚СЊ РёР· РїРѕРґ СѓС‡С‘С‚РєРё РіРґРµ "РІР°СЂСЏС‚СЃСЏ" Рё Р°РєС‚СѓР°Р»РёР·РёСЂСѓСЋС‚СЃСЏ РІСЃРµ СЃРµСЂС‚РёС„РёРєР°С‚С‹
 
 clear
 
-$exportPath = $PSScriptRoot+'\kontur_keys'
-#$exportPath = 'C:\Users\sert_user\Desktop\csp'+'\kontur_keys'
+#$exportPath = $PSScriptRoot+'\kontur_keys'
+$exportPath = 'C:\Users\administrator.SEVEROTORG\Desktop\Kontur\'+'\kontur_keys'
 $exportPath
 
-# Получение имени текущей учетной записи
+# РџРѕР»СѓС‡РµРЅРёРµ РёРјРµРЅРё С‚РµРєСѓС‰РµР№ СѓС‡РµС‚РЅРѕР№ Р·Р°РїРёСЃРё
 $userName = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
 
-# Получение SID текущего пользователя
+# РџРѕР»СѓС‡РµРЅРёРµ SID С‚РµРєСѓС‰РµРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
 $objUser = New-Object System.Security.Principal.NTAccount($userName)
 $userSID = $objUser.Translate([System.Security.Principal.SecurityIdentifier])
 
@@ -43,6 +43,14 @@ foreach ($item in $userKeys)
 	$createDate = $temp[2] + '-' + $temp[1] + '-' + $temp[0]
 	$org        = $temp[3]
 	
+	if ($temp.length -gt 4)
+	{
+		for($i=4; $i -le $temp.length -1; $i++)
+		{
+			$org = $org + '-' + $temp[$i]
+		}
+	}
+	
 #	$keyPath
 #	$keyN
 #	$org 
@@ -52,5 +60,6 @@ foreach ($item in $userKeys)
 	$exportFilePath = $exportPath+'\' + $org + '_' + $createDate + '_' + $keyN + '.reg'
 	reg.exe export $keyPath $exportFilePath "/y"
 }
+
 
 
