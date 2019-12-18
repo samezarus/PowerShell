@@ -6,7 +6,7 @@
 clear
 
 #$exportPath = $PSScriptRoot+'\kontur_keys'
-$exportPath = 'C:\Users\administrator.SEVEROTORG\Desktop\Kontur\'+'\kontur_keys'
+$exportPath = 'D:\_Kontur_\kontur_keys'
 $exportPath
 
 # Получение имени текущей учетной записи
