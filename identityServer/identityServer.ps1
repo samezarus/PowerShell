@@ -79,6 +79,9 @@ foreach ($array_item in $ou_array)
             $osLastBootUpTime = $osInf.LastBootUpTime.ToString()
             $osRAM            = ([math]::Round($osInf.TotalVisibleMemorySize/1048576, 2)).ToString()
 
+            $mbInf  = Get-WmiObject -Class Win32_BaseBoard -ComputerName $pcName
+            $mbName = $mbInf.Manufacturer + ' ' +$mbInf.Product + ' ' + $mbInf.Model
+
             foreach ($sub_item in $servises)
             {
                 $servise = Get-Service -computername $item.Name | Where-Object {$_.Name -like $sub_item}
@@ -112,10 +115,7 @@ foreach ($array_item in $ou_array)
             
             toLog ('  <td bgcolor="'+$clr+'">'+$servZabbix+'</td>')
             #
-            $mbInf  = Get-WmiObject -Class Win32_BaseBoard -ComputerName $pcName
-            $mbName = $mbInf.Manufacturer + ' ' +$mbInf.Product + ' ' + $mbInf.Model
             toLog ('  <td>'+$mbName+'</td>')
-            #
             toLog ('  <td>'+$osCaption+'</td>')
             toLog ('  <td>'+$osVersion +'</td>')
             toLog ('  <td>'+$osInstallDate +'</td>')
