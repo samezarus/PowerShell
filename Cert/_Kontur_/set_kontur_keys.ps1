@@ -2,15 +2,15 @@
 
 clear
 
-# Кодировка
+# РљРѕРґРёСЂРѕРІРєР°
 [Console]::OutputEncoding = [System.Text.Encoding]::GetEncoding("windows-1251")
 
 $importPath = $PSScriptRoot+'\kontur_keys'
 
-# Получение имени текущей учетной записи
+# РџРѕР»СѓС‡РµРЅРёРµ РёРјРµРЅРё С‚РµРєСѓС‰РµР№ СѓС‡РµС‚РЅРѕР№ Р·Р°РїРёСЃРё
 $userName = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
 
-# Получение SID текущего пользователя
+# РџРѕР»СѓС‡РµРЅРёРµ SID С‚РµРєСѓС‰РµРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
 $objUser = New-Object System.Security.Principal.NTAccount($userName)
 $userSID = $objUser.Translate([System.Security.Principal.SecurityIdentifier])
 
@@ -20,7 +20,7 @@ $userSID = $objUser.Translate([System.Security.Principal.SecurityIdentifier])
 $cryptoProUsers = 'HKLM:\SOFTWARE\Wow6432Node\Crypto Pro\Settings\USERS\'
 $userPath       = $cryptoProUsers + $userSID
 
-# --- Изменяем SID-ы в импортируемых сертификатах? 
+# --- РР·РјРµРЅСЏРµРј SID-С‹ РІ РёРјРїРѕСЂС‚РёСЂСѓРµРјС‹С… СЃРµСЂС‚РёС„РёРєР°С‚Р°С…? 
 $keysFileList = Get-Childitem -Path $importPath
 
 foreach ($item in $keysFileList)
@@ -45,15 +45,16 @@ foreach ($item in $keysFileList)
         }
     }
     #
-    if (($oldSID -ne '') -and ($oldSID -ne $userSID.value))
+    #if (($oldSID -ne '') -and ($oldSID -ne $userSID.value))
+    if ($oldSID -ne '')
     {
-        # Меняем сид на сид текущего пользователя 
+        # РњРµРЅСЏРµРј СЃРёРґ РЅР° СЃРёРґ С‚РµРєСѓС‰РµРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ 
         $keyFile | ForEach-Object {$_ -replace $oldSID, $userSID.value} | Set-Content $keyFilePath
 
-        # Устанавливаем сертификат закртой части ключа в реестр
+        # РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј СЃРµСЂС‚РёС„РёРєР°С‚ Р·Р°РєСЂС‚РѕР№ С‡Р°СЃС‚Рё РєР»СЋС‡Р° РІ СЂРµРµСЃС‚СЂ
         reg import $keyFilePath
         
-        # Устанавливаем сертификат открытой части ключа в реестр
+        # РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј СЃРµСЂС‚РёС„РёРєР°С‚ РѕС‚РєСЂС‹С‚РѕР№ С‡Р°СЃС‚Рё РєР»СЋС‡Р° РІ СЂРµРµСЃС‚СЂ
         $cont = '\\.\REGISTRY\' + $orgStr
         &'C:\Program Files\Crypto Pro\CSP\csptest.exe' -property -cinstall -cont $cont
     }
