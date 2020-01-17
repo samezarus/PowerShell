@@ -5,8 +5,6 @@
 
 clear
 
-$exportPath = $PSScriptRoot+'\sbis_keys_global'
-
 # Получение имени текущей учетной записи
 $userName = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
 
