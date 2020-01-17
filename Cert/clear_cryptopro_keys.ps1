@@ -1,16 +1,16 @@
 # sameza
 # 
-# Удаляем все сертификаты (закрытые части) Крипто-Про у текущего пользователя
+# РЈРґР°Р»СЏРµРј РІСЃРµ СЃРµСЂС‚РёС„РёРєР°С‚С‹ (Р·Р°РєСЂС‹С‚С‹Рµ С‡Р°СЃС‚Рё) РљСЂРёРїС‚Рѕ-РџСЂРѕ Сѓ С‚РµРєСѓС‰РµРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
 #
 
 clear
 
 $exportPath = $PSScriptRoot+'\sbis_keys_global'
 
-# Получение имени текущей учетной записи
+# РџРѕР»СѓС‡РµРЅРёРµ РёРјРµРЅРё С‚РµРєСѓС‰РµР№ СѓС‡РµС‚РЅРѕР№ Р·Р°РїРёСЃРё
 $userName = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
 
-# Получение SID текущего пользователя
+# РџРѕР»СѓС‡РµРЅРёРµ SID С‚РµРєСѓС‰РµРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
 $objUser = New-Object System.Security.Principal.NTAccount($userName)
 $userSID = $objUser.Translate([System.Security.Principal.SecurityIdentifier])
 
