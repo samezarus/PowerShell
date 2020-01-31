@@ -15,8 +15,8 @@ Function toLog ($str)
 
 'START'
 
-$ou_array = 'OU=Domain Controllers,DC=severotorg,DC=local',
-            'OU=Srv,DC=severotorg,DC=local'
+$ou_array = 'OU=Domain Controllers,DC=xxx,DC=local',
+            'OU=Srv,DC=xxx,DC=local'
 
 $servises = 'UkmService',
             'Transport',
@@ -47,6 +47,7 @@ toLog '  <th>Версия ОС</td>'
 toLog '  <th>Дата Установки</td>'
 toLog '  <th>Последний запуск</td>'
 toLog '  <th>RAM</td>'
+toLog '  <th>Диски</td>'
 toLog '</tr>'
 
 foreach ($array_item in $ou_array)
@@ -121,6 +122,26 @@ foreach ($array_item in $ou_array)
             toLog ('  <td>'+$osInstallDate +'</td>')
             toLog ('  <td>'+$osLastBootUpTime+'</td>')
             toLog ('  <td>'+$osRAM+'</td>')
+            #
+            $osDisks = ''
+            $tmpDsk = '\\'+$item.Name+'\D$'
+            $tmp = Test-Path $tmpDsk
+            if ($tmp -eq $true)
+            {
+                $osDisks = $osDisks + ' D:\, '
+                $tmpDsk
+            }
+            $tmpDsk = '\\'+$item.Name+'\E$'
+            $tmp = Test-Path $tmpDsk
+            if ($tmp -eq $true)
+            {
+                $osDisks = $osDisks + ' E:\, '
+                $tmpDsk
+            }
+            
+
+            toLog ('  <td>'+$osDisks+'</td>')
+            
             
             $osStaus          = ''
             $osCaption        = ''
