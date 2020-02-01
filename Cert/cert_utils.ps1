@@ -1,4 +1,4 @@
-﻿# sameza
+# sameza
 #
 # В оснастке Крипто ПРО удалить все считыватели кроме "Реестр" что бы максимально сократить количество окон выскакивающих при добавлении
 #
@@ -68,6 +68,34 @@ function import_certs_to_current_user($certs, $certsFolder)
     }
 }
 #################################################################################################################################
+function remove_all_certs($certs)
+{
+    # Удаляем открытые ключи
+    foreach ($item in $certs)
+    {
+        $item | Remove-Item -Force -Recurse 
+    }
+
+    # Удаляем приватные ключи
+    #   Получение имени текущей учетной записи
+    $userName = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+
+    #   Получение SID текущего пользователя
+    $objUser = New-Object System.Security.Principal.NTAccount($userName)
+    $userSID = $objUser.Translate([System.Security.Principal.SecurityIdentifier])
+
+    $cryptoProUsers = 'HKLM:\SOFTWARE\Wow6432Node\Crypto Pro\Settings\USERS\'
+    $userKeysPath = $cryptoProUsers + $userSID + "\Keys"
+
+    $userKeys = Get-ChildItem -Path $userKeysPath
+
+    foreach ($item in $userKeys)
+    {
+        #$item.Name
+        reg.exe delete $item.Name /f
+    }
+}
+#################################################################################################################################
 #################################################################################################################################
 #################################################################################################################################
 
@@ -75,7 +103,10 @@ function import_certs_to_current_user($certs, $certsFolder)
 $certs = get_current_user_certs
 
 # Экспортируем все сертификаты текущего пользователя
-export_certs_from_current_user -certs $certs -certsFolder $certsFolder
+#export_certs_from_current_user -certs $certs -certsFolder $certsFolder
 
 # Импортируе все сертификаты текущему пользователю
-import_certs_to_current_user -certs $certs -certsFolder $certsFolder
+#import_certs_to_current_user -certs $certs -certsFolder $certsFolder
+
+# Удаляем все сертификаты
+#remove_all_certs -certs $certs
