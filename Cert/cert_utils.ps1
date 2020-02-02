@@ -216,6 +216,7 @@ function get_expirings_days($certs)
 #################################################################################################################################
 function ConvertTo-Encoding ([string]$From, [string]$To)
 {  
+    # https://social.technet.microsoft.com/Forums/ru-RU/9f84de0e-f68c-446a-bc07-f079d98e7b7b/powershell-108710861087108810721074108010901100?forum=scrlangru
     Begin
     {  
         $encFrom = [System.Text.Encoding]::GetEncoding($from)  
@@ -229,10 +230,35 @@ function ConvertTo-Encoding ([string]$From, [string]$To)
     }  
 } 
 #################################################################################################################################
-function send_to_zabbix ($trapName, $msg)
+function send_to_zabbix ($tName, $msg)
 {
     $msg = $msg | ConvertTo-Encoding 'windows-1251' 'utf-8'
-    &$zabbixSender -z $zabbixServer -s 'vl20-cert' -k $trapName -o $msg
+    &$zabbixSender -z $zabbixServer -s $senderHost -k $tName -o $msg
+
+    $tName
+    $msg
+}
+#################################################################################################################################
+function find_expiring($certs, $interval, $trapName)
+{
+    # если $trapName пустая строка, то не посылаем в zabbix
+    $expiringsList = get_expirings_days -certs $certs
+    foreach ($item in $expiringsList)
+    {
+        $expDays = $item['expDays']
+        if (($expDays -le $interval) -and ($expDays -gt -1))
+        {
+            $msg = 'Организация: '+$item['CN'] + '; ИНН: ' + $item['INN'] + '; Руководитель: '+ $item['SN']+ ' ' + $item['G'] + '; Заканчивается через: ' + $expDays
+            
+            if ($trapName -ne '')
+            {
+                send_to_zabbix -tName $trapName -msg $msg
+            }
+
+            $msg
+            '------------------------------------------------'
+        }
+    }
 }
 #################################################################################################################################
 #################################################################################################################################
@@ -262,6 +288,23 @@ if ($args.Count -gt 0)
             # --- Удаляем все сертификаты у текущего пользователя
             remove_all_certs -certs $certs
         }
+
+        '-expiring'
+        {
+            # --- Выводим сертификаты у которых истекает срок действия через $interval ($args[1])
+            if ($args.Count -eq 3)
+            {
+                $interval = $args[1]
+                $tName    = $args[2]
+            }
+            else
+            {
+                $interval = 7
+                $tName    = ''
+            }
+
+            find_expiring -certs $certs -interval $interval -trapName $tName
+        }
     }
 }
 
@@ -283,3 +326,5 @@ if ($args.Count -gt 0)
 
 # --- Отправка сообщения/значения трапу в zabbix 
 #send_to_zabbix -trapName $trapName -msg 'тест'
+
+#find_expiring -certs $certs -interval $interval -trapName $trapName
