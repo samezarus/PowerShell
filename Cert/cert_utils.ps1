@@ -11,6 +11,21 @@ $certsLocation = 'cert:\CurrentUser\My'
 $certsFolder   = 'c:\temp'
 $mypwd         = ConvertTo-SecureString -String 'qwerty' -Force -AsPlainText
 
+function clear_string($s)
+{
+    # Очишает строку от спецсимволов
+
+    $result = $s.replace("`0", '')
+    $result = $result.replace("`a", '')
+    $result = $result.replace("`b", '')
+    $result = $result.replace("`r", '')
+    $result = $result.replace("`t", '')
+    $result = $result.replace("`v", '')
+    $result = $result.replace("`f", '')
+
+    return $result
+}
+#################################################################################################################################
 function get_current_user_certs()
 {
     return Get-ChildItem -Path $certsLocation -Recurse #
@@ -96,17 +111,85 @@ function remove_all_certs($certs)
     }
 }
 #################################################################################################################################
+function get_subject_params($certs)
+{
+    # Возвращает элементы как минимум со следующими параметрами:
+    # ОГРН
+    # СНИЛС
+    # ИНН
+    # E      - Эл. почта
+    # CN     - Название организации
+    # T      - Должность
+    # SN     - Фамилия
+    # G      - Имя, Отчество
+    # S      - Край/Область
+    # L      - Город
+    # STREET - Улица  
+
+    $paramsList = New-Object System.Collections.ArrayList
+
+    foreach ($item in $certs)
+    {
+        $s = $item.Subject + ','
+        $s = clear_string -s $s
+
+        $dict = @{}
+
+        $a = 0
+        For ($i=0; $i -le $s.Length +1; $i++)
+        {
+            if ($s[$i] -eq '=')
+            {
+                $key = $s.Substring($a, $i -$a)
+                $b = $i +1
+            }
+        
+            if ($s[$i] -eq ',')
+            {
+                $value = $s.Substring($b, $i -$b)
+                if ($value[0] -eq '"')
+                {
+                    if ($s[$i -1] -ne '"')
+                    {
+                        continue
+                    }
+                }   
+                $a = $i+2 
+
+                $dict.Add($key, $value)
+            }
+        }
+
+        $x = $paramsList.Add($dict)
+    }
+    
+    return $paramsList
+}
+#################################################################################################################################
+function get_expiring_days($certs)
+{
+    
+}
+#################################################################################################################################
 #################################################################################################################################
 #################################################################################################################################
 
 # Получаем список сертификатов текущего пользователя
 $certs = get_current_user_certs
 
-# Экспортируем все сертификаты текущего пользователя
+# --- Экспортируем все сертификаты текущего пользователя
 #export_certs_from_current_user -certs $certs -certsFolder $certsFolder
 
-# Импортируе все сертификаты текущему пользователю
+# --- Импортируе все сертификаты текущему пользователю
 #import_certs_to_current_user -certs $certs -certsFolder $certsFolder
 
-# Удаляем все сертификаты
+# --- Удаляем все сертификаты
 #remove_all_certs -certs $certs
+
+# --- Вывод параметров из Subject
+#$paramsList = get_subject_params -certs $certs
+#foreach ($item in $paramsList)
+#{
+#    $item
+#    '--------'
+#}
