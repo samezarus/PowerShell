@@ -11,6 +11,15 @@ $certsLocation = 'cert:\CurrentUser\My'
 $certsFolder   = 'c:\temp'
 $mypwd         = ConvertTo-SecureString -String 'qwerty' -Force -AsPlainText
 
+$zabbixSender = 'C:\Zabbix Agent\bin\win64\zabbix_sender.exe'
+$zabbixServer = '192.168.10.209'
+$senderHost   = 'vl20-cert'
+$trapName     = 'certs_expiring'
+
+
+#################################################################################################################################
+#################################################################################################################################
+#################################################################################################################################
 function clear_string($s)
 {
     # Очишает строку от спецсимволов
@@ -205,6 +214,27 @@ function get_expirings_days($certs)
     return $paramsList
 }
 #################################################################################################################################
+function ConvertTo-Encoding ([string]$From, [string]$To)
+{  
+    Begin
+    {  
+        $encFrom = [System.Text.Encoding]::GetEncoding($from)  
+        $encTo = [System.Text.Encoding]::GetEncoding($to)  
+    }  
+    Process
+    {  
+        $bytes = $encTo.GetBytes($_)  
+        $bytes = [System.Text.Encoding]::Convert($encFrom, $encTo, $bytes)  
+        $encTo.GetString($bytes)  
+    }  
+} 
+#################################################################################################################################
+function send_to_zabbix ($trapName, $msg)
+{
+    $msg = $msg | ConvertTo-Encoding 'windows-1251' 'utf-8'
+    &$zabbixSender -z $zabbixServer -s 'vl20-cert' -k $trapName -o $msg
+}
+#################################################################################################################################
 #################################################################################################################################
 #################################################################################################################################
 
@@ -217,19 +247,19 @@ if ($args.Count -gt 0)
     {
         '-export'
         {
-            # --- Экспортируем все сертификаты текущего пользователя
+            # --- Экспортируем все сертификаты текущего пользователя в папку
             export_certs_from_current_user -certs $certs -certsFolder $certsFolder
         }
 
         '-import'
         {
-            # --- Импортируе все сертификаты текущему пользователю
+            # --- Импортируем все сертификаты текущему пользователю из папки
             import_certs_to_current_user -certs $certs -certsFolder $certsFolder
         }
 
         '-claer'
         {
-            # --- Удаляем все сертификаты
+            # --- Удаляем все сертификаты у текущего пользователя
             remove_all_certs -certs $certs
         }
     }
@@ -250,3 +280,6 @@ if ($args.Count -gt 0)
 #    $item
 #    '--------'
 #}
+
+# --- Отправка сообщения/значения трапу в zabbix 
+#send_to_zabbix -trapName $trapName -msg 'тест'
