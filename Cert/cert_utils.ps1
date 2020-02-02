@@ -97,6 +97,7 @@ function remove_all_certs($certs)
     # Удаляем открытые ключи
     foreach ($item in $certs)
     {
+
         $item | Remove-Item -Force -Recurse 
     }
 
@@ -283,7 +284,7 @@ if ($args.Count -gt 0)
             import_certs_to_current_user -certs $certs -certsFolder $certsFolder
         }
 
-        '-claer'
+        '-clear'
         {
             # --- Удаляем все сертификаты у текущего пользователя
             remove_all_certs -certs $certs
