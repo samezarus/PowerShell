@@ -111,7 +111,7 @@ function remove_all_certs($certs)
     }
 }
 #################################################################################################################################
-function get_subject_params($certs)
+function get_subject_params($subject)
 {
     # Возвращает элементы как минимум со следующими параметрами:
     # ОГРН
@@ -126,69 +126,126 @@ function get_subject_params($certs)
     # L      - Город
     # STREET - Улица  
 
+    $s = $subject + ','
+    $s = clear_string -s $s
+
+    $dict = @{}
+
+    $a = 0
+    For ($i=0; $i -le $s.Length +1; $i++)
+    {
+        if ($s[$i] -eq '=')
+        {
+            $key = $s.Substring($a, $i -$a)
+            $b = $i +1
+        }
+        
+        if ($s[$i] -eq ',')
+        {
+            $value = $s.Substring($b, $i -$b)
+            if ($value[0] -eq '"')
+            {
+                if ($s[$i -1] -ne '"')
+                {
+                    continue
+                }
+            }   
+            $a = $i+2 
+
+            $dict.Add($key, $value)
+        }
+    }
+
+    return $dict
+}
+#################################################################################################################################
+function get_subjects_params($certs)
+{
     $paramsList = New-Object System.Collections.ArrayList
 
     foreach ($item in $certs)
     {
-        $s = $item.Subject + ','
-        $s = clear_string -s $s
-
-        $dict = @{}
-
-        $a = 0
-        For ($i=0; $i -le $s.Length +1; $i++)
-        {
-            if ($s[$i] -eq '=')
-            {
-                $key = $s.Substring($a, $i -$a)
-                $b = $i +1
-            }
-        
-            if ($s[$i] -eq ',')
-            {
-                $value = $s.Substring($b, $i -$b)
-                if ($value[0] -eq '"')
-                {
-                    if ($s[$i -1] -ne '"')
-                    {
-                        continue
-                    }
-                }   
-                $a = $i+2 
-
-                $dict.Add($key, $value)
-            }
-        }
-
-        $x = $paramsList.Add($dict)
+        $params = get_subject_params -subject $item.Subject
+        $x = $paramsList.Add($params)
     }
     
     return $paramsList
 }
 #################################################################################################################################
-function get_expiring_days($certs)
+function get_expirings_days($certs)
 {
-    
+    $dateMask = 'yyyy.MM.dd'
+
+    $paramsList = New-Object System.Collections.ArrayList
+   
+    foreach ($item in $certs)
+    {   
+        $eDate = $item.NotAfter | Get-Date -Format $dateMask  # Действует до
+        $exp = New-TimeSpan -End $eDate
+        $expDays = $exp.Days
+
+        $params = get_subject_params -subject $item.Subject
+        $INN = $params['ИНН']
+        $CN  = $params['CN']
+        $SN  = $params['SN']
+        $G   = $params['G']
+
+        $dict = @{}
+
+        $dict.Add('expDays', $expDays) 
+        $dict.Add('INN'    , $INN)
+        $dict.Add('CN'     , $CN)
+        $dict.Add('SN'     , $SN)
+        $dict.Add('G'      , $G)
+
+        $x = $paramsList.Add($dict)
+        #'--------------'
+    }
+
+    return $paramsList
 }
 #################################################################################################################################
 #################################################################################################################################
 #################################################################################################################################
 
-# Получаем список сертификатов текущего пользователя
+# --- Получаем список сертификатов текущего пользователя
 $certs = get_current_user_certs
 
-# --- Экспортируем все сертификаты текущего пользователя
-#export_certs_from_current_user -certs $certs -certsFolder $certsFolder
+if ($args.Count -gt 0)
+{
+    switch -Exact($args[0])
+    {
+        '-export'
+        {
+            # --- Экспортируем все сертификаты текущего пользователя
+            export_certs_from_current_user -certs $certs -certsFolder $certsFolder
+        }
 
-# --- Импортируе все сертификаты текущему пользователю
-#import_certs_to_current_user -certs $certs -certsFolder $certsFolder
+        '-import'
+        {
+            # --- Импортируе все сертификаты текущему пользователю
+            import_certs_to_current_user -certs $certs -certsFolder $certsFolder
+        }
 
-# --- Удаляем все сертификаты
-#remove_all_certs -certs $certs
+        '-claer'
+        {
+            # --- Удаляем все сертификаты
+            remove_all_certs -certs $certs
+        }
+    }
+}
 
 # --- Вывод параметров из Subject
-#$paramsList = get_subject_params -certs $certs
+#$paramsList = get_subjects_params -certs $certs
 #foreach ($item in $paramsList)
+#{
+#    $item
+#    '--------'
+#}
+
+# --- Вывод количества дней действия сертификатов
+#$expiringsList = get_expiring_days -certs $certs
+#foreach ($item in $expiringsList)
 #{
 #    $item
 #    '--------'
