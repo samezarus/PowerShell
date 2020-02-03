@@ -234,10 +234,9 @@ function ConvertTo-Encoding ([string]$From, [string]$To)
 function send_to_zabbix ($tName, $msg)
 {
     $msg = $msg | ConvertTo-Encoding 'windows-1251' 'utf-8'
+    $msg = clear_string -s $msg
+    $msg = $msg.Replace('"', '')
     &$zabbixSender -z $zabbixServer -s $senderHost -k $tName -o $msg
-
-    $tName
-    $msg
 }
 #################################################################################################################################
 function find_expiring($certs, $interval, $trapName)
@@ -251,7 +250,7 @@ function find_expiring($certs, $interval, $trapName)
         {
             $msg = 'Организация: '+$item['CN'] + '; ИНН: ' + $item['INN'] + '; Руководитель: '+ $item['SN']+ ' ' + $item['G'] + '; Заканчивается через: ' + $expDays
             
-            if ($trapName -ne '')
+            if (($trapName -ne '') -and ($trapName -ne $null))
             {
                 send_to_zabbix -tName $trapName -msg $msg
             }
@@ -293,7 +292,7 @@ if ($args.Count -gt 0)
         '-expiring'
         {
             # --- Выводим сертификаты у которых истекает срок действия через $interval ($args[1])
-            if ($args.Count -eq 3)
+            if ($args.Count -gt 1)
             {
                 $interval = $args[1]
                 $tName    = $args[2]
@@ -329,3 +328,4 @@ if ($args.Count -gt 0)
 #send_to_zabbix -trapName $trapName -msg 'тест'
 
 #find_expiring -certs $certs -interval $interval -trapName $trapName
+#find_expiring -certs $certs -interval 14 -trapName ''
