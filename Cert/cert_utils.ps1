@@ -302,7 +302,9 @@ function find_expiring($interval, $trapName)
 }
 #################################################################################################################################
 function certs_sort()
-{
+{   
+    # При первом запуске !!! Если не было экспорта, то его надо обязательно сделать !!!!!!!!
+    
     $serts = get_certs_list #
 
     $regFilesList = Get-Childitem -Path $certsFolder #
@@ -332,6 +334,113 @@ function certs_sort()
     remove_all_certs
 
     import_certs_from_reg_files
+}
+#################################################################################################################################
+# -------------------------------------------------------------------------------------------------------------------------------
+#################################################################################################################################
+function get_launcher_fio_dir()
+{
+    $result = $PSScriptRoot
+
+    Set-Location $PSScriptRoot
+
+    $result = '..\'+$PSScriptRoot
+
+    Set-Location -Path '..\'
+
+    $result = Get-Location
+
+    Set-Location $PSScriptRoot
+
+    $result = $result.Path + '\Launcher\'
+
+    return $result
+}
+#################################################################################################################################
+function find_in_file($fileName, $searchString, $findFl)
+{
+    # $findFl - флаг алгоритма поиска 0 - жёсткое соответствие строки, 1 - содержится в строке
+    #
+    $result = $false
+    
+    $stringList = Get-Content $fileName
+    foreach ($item in $stringList)
+    {
+        if($findFl -eq 0)
+        {
+            if($item -eq $searchString)
+            {
+                $result = $true
+                break
+            }
+        }
+        #
+        if($findFl -eq 1)
+        {
+            if($item.indexOf($searchString) -ne -1)
+            {
+                $result = $true
+                break
+            }
+        }
+    }
+
+    return $result
+}
+#################################################################################################################################
+function launcher_conf()
+{
+    # Конфигурирование лаунчера
+
+    $certs = get_certs_list
+    
+    $launcherFioDir = get_launcher_fio_dir
+
+    # Удаляем все файлы
+    $filesList = Get-Childitem -Path $launcherFioDir
+    foreach ($item in $filesList)
+    {
+        Remove-Item -path $item.FullName -Recurse -Force
+    }
+
+    
+    foreach ($item in $certs)
+    {
+        $params = get_subject_params -subject $item.Subject
+        $fio    = $params['SN'] +' ' +$params['G']
+        
+        # --- Создаём структуру каталогов с ФИО владельцев сертификатов и эксмортируем в них сертификаты
+        $fioDir = $cert_sort +$fio
+        
+        #New-Item -Path $fioDir -ItemType "directory" -Force
+        #export_cert_from_current_user -cert $item -certsFolder $fioDir
+
+        # --- Создаём структуру каталогов по ФИО
+        $fioDir = $launcherFioDir + 'fio\' + $fio
+        $x = New-Item -Path $fioDir -ItemType "directory" -Force
+        
+        $orgName = $params['CN'].replace('"', '') # Наименование организации
+        $orgFile = $fioDir + '\' + $orgName + '.txt'
+        $x = New-Item -Path $orgFile -ItemType File -Force
+        
+        # --- Создаём/дополняем ФИО в файл с ip-адресам серверов 
+
+        $serversFile = $PSScriptRoot + '\servers.txt'
+
+        if ((Test-Path $serversFile) -ne $true)
+        {
+            $x =  New-Item -Path $serversFile -ItemType File -Force
+        }
+
+        $fio = $fio +'='
+        
+        $findFl = find_in_file -fileName $serversFile -searchString $fio -findFl 1
+        if ($findFl -eq $false)
+        { 
+            $fio | out-file -filepath $serversFile -Append   
+        }
+        
+    }
 }
 #################################################################################################################################
 #################################################################################################################################
@@ -397,3 +506,5 @@ if ($args.Count -gt 0)
 
 # --- 4
 #certs_sort
+
+#launcher_conf
