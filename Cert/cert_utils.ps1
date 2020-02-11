@@ -1,6 +1,7 @@
 clear
 
-$certsFolder = $PSScriptRoot+'\certs' # Каталог выгрузки сертификатов
+$exportFolder = $PSScriptRoot+'\export_certs' # Каталог выгрузки сертификатов
+$importFolder = $PSScriptRoot+'\import_certs' # Каталог загрузки сертификатов
 #
 $sortFolder = $PSScriptRoot+'\sort_certs' # Каталог для отсортированных сертификатов
 #
@@ -35,6 +36,8 @@ function clear_string($s)
     $result = $result.replace("`t", '')
     $result = $result.replace("`v", '')
     $result = $result.replace("`f", '')
+    $result = $result.replace("`f", '')
+    $result = $result.replace('"', '')
 
     return $result
 }
@@ -62,8 +65,6 @@ function export_certs()
 {
     # Экспорт сертификатов текущего пользователя из ветки реестра в каталог $certsFolder
 
-    $x = create_folder -folderName $certsFolder
-
     $userKeys = Get-ChildItem -Path $userKeysPath
 
     foreach ($item in $userKeys)
@@ -71,7 +72,7 @@ function export_certs()
 	    $keyPath = $item.Name
 	
 	    $ts = time_stamp
-        $exportFilePath = $certsFolder+'\' + $ts + '.reg'
+        $exportFilePath = $exportFolder+'\' + $ts + '.reg'
 	    reg.exe export $keyPath $exportFilePath "/y"
     }
 }
@@ -103,6 +104,20 @@ function remove_all_certs()
     {
         #$item.Name
         reg.exe delete $item.Name /f
+    }
+}
+#################################################################################################################################
+function remove_by_fio($fio)
+{
+    # отложено !!!
+    # Удаление сертификатов по фамилии владельца
+
+    $serts = get_certs_list #
+
+    foreach ($sert in $serts)
+    {
+        $sert.Subject
+        '-------------------------------'
     }
 }
 #################################################################################################################################
@@ -150,7 +165,7 @@ function import_certs_from_reg_files()
 {
     # Импортирование всех сертификатов текущему пользователю из каталога $certsFolder
 
-    $regFilesList = Get-Childitem -Path $certsFolder
+    $regFilesList = Get-Childitem -Path $importFolder
     
     foreach ($item in $regFilesList)
     {
@@ -307,33 +322,45 @@ function certs_sort()
     
     $serts = get_certs_list #
 
-    $regFilesList = Get-Childitem -Path $certsFolder #
+    $x = Remove-Item $exportFolder -Recurse -Force
 
-    Remove-Item $sortFolder -Recurse -Force
-    create_folder -folderName $sortFolder
+    export_certs
 
-    foreach ($regFile in $regFilesList)
+    $regFilesList = Get-Childitem -Path $exportFolder # Работаем с экспортироваными ключами данным скриптом
+
+    if ((Test-Path $exportFolder) -eq $true)
     {
-        remove_all_certs
+        $x = Remove-Item $sortFolder -Recurse -Force
+        $x = create_folder -folderName $sortFolder
+
+        foreach ($regFile in $regFilesList)
+        {
+            remove_all_certs
         
-        import_cert_from_reg_file -regFile $regFile
+            import_cert_from_reg_file -regFile $regFile
 
-        $sert = get_certs_list # в списке будит только один сертификат, который импортировали выше
+            $sert = get_certs_list # в списке будит только один сертификат, который импортировали выше
 
-        $subject = get_subject_params -subject $sert[0].Subject
+            $subject = get_subject_params -subject $sert[0].Subject
 
-        $fio = $subject['SN'] +' '+ $subject['G']
+            $fio = $subject['SN'] +' '+ $subject['G']
 
-        $fioFolder = $sortFolder+'\'+$fio
+            $fioFolder = $sortFolder + '\' + $fio + '\' + $subject['CN']
 
-        create_folder -folderName $fioFolder
+            $x = create_folder -folderName $fioFolder
 
-        Copy-Item -Path $regFile.FullName -Destination $fioFolder
+            $eDate = $sert.NotAfter | Get-Date -Format 'yyyy.MM.dd'
+
+            $newName = $fioFolder+'\'+$subject['CN'] + ' ' + $subject['ИНН'] + ' '+$eDate+'.reg'
+            $newName = (clear_string -s $newName)
+            
+            $x = Copy-Item -Path $regFile.FullName -Destination $newName
+        }
+
+        remove_all_certs
+
+        import_certs_from_reg_files
     }
-
-    remove_all_certs
-
-    import_certs_from_reg_files
 }
 #################################################################################################################################
 # -------------------------------------------------------------------------------------------------------------------------------
@@ -446,19 +473,24 @@ function launcher_conf()
 #################################################################################################################################
 #################################################################################################################################
 
+$x = create_folder -folderName $exportFolder
+$x = create_folder -folderName $importFolder
+$x = create_folder -folderName $sortFolder
+
+
 if ($args.Count -gt 0)
 {
     switch -Exact($args[0])
     {
         '-export'
         {
-            # --- Экспортируем все сертификаты текущего пользователя в каталог
+            # --- Экспортируем все сертификаты текущего пользователя в каталог $exportFolder
             export_certs
         }
 
         '-import'
         {
-            # --- Импортируем все сертификаты текущему пользователю из каталога
+            # --- Импортируем все сертификаты текущему пользователю из каталога $importFolder
             import_certs_from_reg_files
         }
 
@@ -488,7 +520,8 @@ if ($args.Count -gt 0)
 
         '-sort'
         {
-            # --- Сортируем сертификаты по владельцу
+            # --- !!!!!!!!!!!!!!!!!!!! Очень осторожно с этим параметром
+            # --- Сортируем сертификаты по владельцу в каталог $sortFolder
             
             certs_sort
         }
