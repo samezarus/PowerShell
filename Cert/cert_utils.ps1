@@ -1,3 +1,50 @@
+<#
+
+telegram https://t.me/sameza
+
+Данный скрипт предназначен для рабрты с ЭЦП в связке с Крипто-Про
+
+Скрипт работает через передаваемые ему параметры:
+
+    -export 
+        Экспорт сертификатов текущего пользователя в папку $exportFolder
+    
+    -import
+        Импорт сертификатов текущему пользователю из папки $importFolder
+    
+    -clear 
+        Удаление всех личных сертификатов у текущего пользователя
+    
+    -expiring 
+        Вывод сертификатов у которых истекает срок действия через $interval
+    
+    -certs_sort 
+        !!! ОЧЕНЬ ОСТОРОЖНО !!! Сортирует сертификаты по ФИО
+
+--------------------------------------------------------------------------------------------------
+
+Порядок работы со скриптом:
+    
+    Ипорт сертификатов пользователю:
+        1. Создать каталог для данного скрипта "C:\temp"
+        2. Закидываем в этот каталог данный скрипт
+        3. Создать "C:\temp\import_certs", скопировать в него ранее экспортированные *.reg файлы
+        4. Запускаем скрипт для импорта "C:\temp\cert_utils.ps1 -import"
+
+    Экспорт личных сертификатов пользователя:
+                
+        "C:\temp\cert_utils.ps1 -export"
+
+    Сортировка сертификатов:
+        Результат сортировки:
+            <ФИО>(каталог)
+                <Название организации>(каталог)
+                    <Название организации> <ИНН организации> <Дата окончания сертификата>.reg(Файл)
+
+
+                
+        "C:\temp\cert_utils.ps1 -certs_sort"
+#>
 clear
 
 $exportFolder = $PSScriptRoot+'\export_certs' # Каталог выгрузки сертификатов
@@ -214,7 +261,11 @@ function get_subject_params($subject)
             }   
             $a = $i+2 
 
-            $dict.Add($key, $value)
+
+            if ($key -ne 'STREET') # Проблема с обработкой параметра STREET
+            {
+                $dict.Add($key, $value)
+            }
         }
     }
 
@@ -301,7 +352,7 @@ function find_expiring($interval, $trapName)
     foreach ($item in $expiringsList)
     {
         $expDays = $item['expDays']
-        if (($expDays -le $interval) -and ($expDays -gt -1))
+        if (($expDays -le $interval) -and ($expDays -gt 0))
         {
             $msg = 'Организация: '+$item['CN'] + '; ИНН: ' + $item['INN'] + '; Руководитель: '+ $item['SN']+ ' ' + $item['G'] + '; Заканчивается через: ' + $expDays
             
@@ -330,8 +381,7 @@ function certs_sort()
 
     if ((Test-Path $exportFolder) -eq $true)
     {
-        $x = Remove-Item $sortFolder -Recurse -Force
-        $x = create_folder -folderName $sortFolder
+        #$x = Remove-Item $sortFolder -Recurse -Force
 
         foreach ($regFile in $regFilesList)
         {
@@ -524,6 +574,13 @@ if ($args.Count -gt 0)
             # --- Сортируем сертификаты по владельцу в каталог $sortFolder
             
             certs_sort
+        }
+
+        '-conf'
+        {
+            # --- Конфигурация лаунчера
+            
+            launcher_conf
         }
     }
 }
