@@ -49,8 +49,9 @@ clear
 
 $exportFolder = $PSScriptRoot+'\export_certs' # Каталог выгрузки сертификатов
 $importFolder = $PSScriptRoot+'\import_certs' # Каталог загрузки сертификатов
+$sortFolder   = $PSScriptRoot+'\sort_certs'   # Каталог для отсортированных сертификатов
 #
-$sortFolder = $PSScriptRoot+'\sort_certs' # Каталог для отсортированных сертификатов
+$serversFile = $PSScriptRoot + '\servers.txt' # Файл со списком сопоставления серверов к ФИО руководителя
 #
 $userName = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name # Получение имени текущей учетной записи
 #
@@ -76,15 +77,20 @@ function clear_string($s)
 {
     # Очишает строку от спецсимволов
 
-    $result = $s.replace("`0", '')
-    $result = $result.replace("`a", '')
-    $result = $result.replace("`b", '')
-    $result = $result.replace("`r", '')
-    $result = $result.replace("`t", '')
-    $result = $result.replace("`v", '')
-    $result = $result.replace("`f", '')
-    $result = $result.replace("`f", '')
-    $result = $result.replace('"', '')
+    $result = ''
+
+    if (($s -ne $null) -and ($s -ne ''))
+    {
+        $result = $s.replace("`0", '')
+        $result = $result.replace("`a", '')
+        $result = $result.replace("`b", '')
+        $result = $result.replace("`r", '')
+        $result = $result.replace("`t", '')
+        $result = $result.replace("`v", '')
+        $result = $result.replace("`f", '')
+        $result = $result.replace("`f", '')
+        $result = $result.replace('"', '')
+    }
 
     return $result
 }
@@ -110,16 +116,18 @@ function create_folder($folderName)
 #################################################################################################################################
 function export_certs()
 {
-    # Экспорт сертификатов текущего пользователя из ветки реестра в каталог $certsFolder
+    # Экспорт сертификатов текущего пользователя из ветки реестра в каталог $exportFolder с именем в виде таймстемпа
 
     $userKeys = Get-ChildItem -Path $userKeysPath
 
     foreach ($item in $userKeys)
-    {
-	    $keyPath = $item.Name
+    {  
+        $keyPath = $item.Name
+
+        $lasPosSlash = $keyPath.LastIndexOf('\')
+        $keyName = $keyPath.Substring($lasPosSlash +1)
 	
-	    $ts = time_stamp
-        $exportFilePath = $exportFolder+'\' + $ts + '.reg'
+        $exportFilePath = $exportFolder+'\' + $keyName + '.reg'
 	    reg.exe export $keyPath $exportFilePath "/y"
     }
 }
@@ -367,13 +375,13 @@ function find_expiring($interval, $trapName)
     }
 }
 #################################################################################################################################
-function certs_sort()
+function sort_certs()
 {   
     # При первом запуске !!! Если не было экспорта, то его надо обязательно сделать !!!!!!!!
     
     $serts = get_certs_list #
 
-    $x = Remove-Item $exportFolder -Recurse -Force
+    $x = Remove-Item ($exportFolder+'\*.*') -Recurse -Force
 
     export_certs
 
@@ -415,7 +423,7 @@ function certs_sort()
 #################################################################################################################################
 # -------------------------------------------------------------------------------------------------------------------------------
 #################################################################################################################################
-function get_launcher_fio_dir()
+function get_launcher_dir()
 {
     $result = $PSScriptRoot
 
@@ -471,7 +479,10 @@ function launcher_conf()
 
     $certs = get_certs_list
     
-    $launcherFioDir = get_launcher_fio_dir
+    $launcherDir = get_launcher_dir
+
+    $launcherFioDir = $launcherDir + '\fio\'
+    $x              = New-Item -Path $launcherFioDir -ItemType "directory" -Force
 
     # Удаляем все файлы
     $filesList = Get-Childitem -Path $launcherFioDir
@@ -485,28 +496,27 @@ function launcher_conf()
     {
         $params = get_subject_params -subject $item.Subject
         $fio    = $params['SN'] +' ' +$params['G']
+        $inn    = $params['ИНН']
         
-        # --- Создаём структуру каталогов с ФИО владельцев сертификатов и эксмортируем в них сертификаты
+        # --- Создаём структуру каталогов с ФИО владельцев сертификатов 
         $fioDir = $cert_sort +$fio
-        
-        #New-Item -Path $fioDir -ItemType "directory" -Force
-        #export_cert_from_current_user -cert $item -certsFolder $fioDir
 
         # --- Создаём структуру каталогов по ФИО
-        $fioDir = $launcherFioDir + 'fio\' + $fio
+        $fioDir = $launcherFioDir + $fio
         $x = New-Item -Path $fioDir -ItemType "directory" -Force
         
         $orgName = $params['CN'].replace('"', '') # Наименование организации
-        $orgFile = $fioDir + '\' + $orgName + '.txt'
-        $x = New-Item -Path $orgFile -ItemType File -Force
-        
-        # --- Создаём/дополняем ФИО в файл с ip-адресам серверов 
+        $orgFile = $fioDir + '\' + $orgName + '_' + $inn + '.txt'
+        $x = New-Item -Path $orgFile -ItemType File -Force # Файл с имемнем организации
 
-        $serversFile = $PSScriptRoot + '\servers.txt'
+        'fio=' + $fio | out-file -filepath $orgFile -Append 
+        'inn=' + $inn | out-file -filepath $orgFile -Append  
+
+        # --- Создаём/дополняем ФИО в файл с ip-адресам серверов 
 
         if ((Test-Path $serversFile) -ne $true)
         {
-            $x =  New-Item -Path $serversFile -ItemType File -Force
+            $x = New-Item -Path $serversFile -ItemType File -Force
         }
 
         $fio = $fio +'='
@@ -516,17 +526,19 @@ function launcher_conf()
         { 
             $fio | out-file -filepath $serversFile -Append   
         }
-        
     }
+
+    Copy-Item -Path $serversFile -Destination $launcherDir -Force
 }
 #################################################################################################################################
 #################################################################################################################################
 #################################################################################################################################
 
+clear
+
 $x = create_folder -folderName $exportFolder
 $x = create_folder -folderName $importFolder
 $x = create_folder -folderName $sortFolder
-
 
 if ($args.Count -gt 0)
 {
@@ -573,7 +585,7 @@ if ($args.Count -gt 0)
             # --- !!!!!!!!!!!!!!!!!!!! Очень осторожно с этим параметром
             # --- Сортируем сертификаты по владельцу в каталог $sortFolder
             
-            certs_sort
+            sort_certs
         }
 
         '-conf'
@@ -586,7 +598,7 @@ if ($args.Count -gt 0)
 }
 
 # --- 1
-#export_certs
+export_certs
 
 # --- 2
 #remove_all_certs
@@ -598,3 +610,5 @@ if ($args.Count -gt 0)
 #certs_sort
 
 #launcher_conf
+
+#'123'
