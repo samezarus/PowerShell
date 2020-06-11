@@ -293,34 +293,43 @@ function get_subjects_params($certs)
     return $paramsList
 }
 #################################################################################################################################
+function get_expiring_days($cert)
+{
+    # Получение остатка дней (но так же и сопутствующую информацию), через который истечёт сертификат
+    
+    $dateMask = 'yyyy.MM.dd'
+   
+    $eDate = $cert.NotAfter | Get-Date -Format $dateMask  # Действует до
+    $exp = New-TimeSpan -End $eDate
+    $expDays = $exp.Days
+
+    $params = get_subject_params -subject $cert.Subject
+    $INN = $params['ИНН']
+    $CN  = $params['CN']
+    $SN  = $params['SN']
+    $G   = $params['G']
+
+    $dict = @{}
+
+    $dict.Add('expDays', $expDays) 
+    $dict.Add('INN'    , $INN)
+    $dict.Add('CN'     , $CN)
+    $dict.Add('SN'     , $SN)
+    $dict.Add('G'      , $G)
+
+    return $dict
+}
+#################################################################################################################################
 function get_expirings_days($certs)
 {
-    $dateMask = 'yyyy.MM.dd'
+    # Выборка всех сертификатов(хранящихся в реестре) с остатками дней действия
 
     $paramsList = New-Object System.Collections.ArrayList
    
     foreach ($item in $certs)
     {   
-        $eDate = $item.NotAfter | Get-Date -Format $dateMask  # Действует до
-        $exp = New-TimeSpan -End $eDate
-        $expDays = $exp.Days
-
-        $params = get_subject_params -subject $item.Subject
-        $INN = $params['ИНН']
-        $CN  = $params['CN']
-        $SN  = $params['SN']
-        $G   = $params['G']
-
-        $dict = @{}
-
-        $dict.Add('expDays', $expDays) 
-        $dict.Add('INN'    , $INN)
-        $dict.Add('CN'     , $CN)
-        $dict.Add('SN'     , $SN)
-        $dict.Add('G'      , $G)
-
-        $x = $paramsList.Add($dict)
-        #'--------------'
+        $x = get_expiring_days -cert $item
+        $x = $paramsList.Add($x)
     }
 
     return $paramsList
@@ -371,6 +380,51 @@ function find_expiring($interval, $trapName)
 
             $msg
             '------------------------------------------------'
+        }
+    }
+}
+#################################################################################################################################
+function find_expiring2($interval, $trapName)
+{
+    # Суть функции с индексом 2, в том что может случится ситуация, при которой у одной организации
+    # будут два сертификата, один старый с неистёкшим остатком дней, и новый перевыпущенный 
+    #
+    # если $trapName пустая строка, то не посылаем в zabbix
+
+    $certs = get_certs_list
+
+    $expiringsList    = get_expirings_days -certs $certs
+    $subExpiringsList = get_expirings_days -certs $certs
+
+    foreach ($item in $expiringsList)
+    {
+        if ($item['expDays'] -gt 0) # Если остаток действия дней сертификата больше 0
+        {
+            $expDays = $item['expDays']  
+
+            foreach($item2 in $subExpiringsList)
+            {
+                if ($item['INN'] -eq $item2['INN'] )
+                {
+                    if ($item2['expDays'] -gt $expDays)
+                    {
+                        $expDays = $item2['expDays']  
+                    }
+                }
+            }
+
+            if ($expDays -le $interval)
+            {
+                $msg = 'Организация: '+$item['CN'] + '; ИНН: ' + $item['INN'] + '; Руководитель: '+ $item['SN']+ ' ' + $item['G'] + '; Заканчивается через: ' + $expDays
+
+                if (($trapName -ne '') -and ($trapName -ne $null))
+                {
+                    send_to_zabbix -tName $trapName -msg $msg
+                }
+
+                $msg
+                '------------------------------------------------'
+            }
         }
     }
 }
@@ -577,7 +631,7 @@ if ($args.Count -gt 0)
                 $tName    = ''
             }
 
-            find_expiring -interval $interval -trapName $tName
+            find_expiring2 -interval $interval -trapName $tName
         }
 
         '-sort'
@@ -598,7 +652,7 @@ if ($args.Count -gt 0)
 }
 
 # --- 1
-export_certs
+#export_certs
 
 # --- 2
 #remove_all_certs
@@ -611,4 +665,4 @@ export_certs
 
 #launcher_conf
 
-#'123'
+#find_expiring2 14 ''
