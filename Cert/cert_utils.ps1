@@ -8,6 +8,11 @@ telegram https://t.me/sameza
 
     -export 
         Экспорт сертификатов текущего пользователя в папку $exportFolder
+
+    -exportOpenKeys
+        Экспортируем все открытые части сертифиеатов и их отпечатки
+        Под каждую организацию создаётся своя папка с именем организации и ИНН
+        Внутри папки создаются папки по дате выпуска сертификата, и внутри неё создаётся сертификат и файл со штампом сертификата
     
     -import
         Импорт сертификатов текущему пользователю из папки $importFolder
@@ -47,9 +52,10 @@ telegram https://t.me/sameza
 #>
 clear
 
-$exportFolder = $PSScriptRoot+'\export_certs' # Каталог выгрузки сертификатов
-$importFolder = $PSScriptRoot+'\import_certs' # Каталог загрузки сертификатов
-$sortFolder   = $PSScriptRoot+'\sort_certs'   # Каталог для отсортированных сертификатов
+$exportFolder    = $PSScriptRoot+'\export_certs' # Каталог выгрузки сертификатов (*.reg - открытая и закрытая часть)
+$exportCerFolder = $exportFolder+'\open_keys'    # Каталог выгрузки открытых ключей
+$importFolder    = $PSScriptRoot+'\import_certs' # Каталог загрузки сертификатов
+$sortFolder      = $PSScriptRoot+'\sort_certs'   # Каталог для отсортированных сертификатов
 #
 $serversFile = $PSScriptRoot + '\servers.txt' # Файл со списком сопоставления серверов к ФИО руководителя
 #
@@ -129,6 +135,33 @@ function export_certs()
 	
         $exportFilePath = $exportFolder+'\' + $keyName + '.reg'
 	    reg.exe export $keyPath $exportFilePath "/y"
+    }
+}
+#################################################################################################################################
+function export_open_keys()
+{
+    $certs = get_certs_list
+
+    foreach ($item in $certs)
+    {
+        $orgInf  = get_subject_params -subject $item.Subject
+        $orgName = $orgInf['CN']
+        $orgINN  = $orgInf['ИНН']
+
+        $fldName = $exportCerFolder +'\'+ $orgName + ' - ' + $orgINN
+        $x = create_folder -folderName $fldName
+        
+        $dateMask = 'dd.MM.yyyy'
+        $bDate = $item.NotBefore | Get-Date -Format $dateMask  # Действует с
+        
+        $subFldName = $fldName + '\' + $bDate
+        $x = create_folder -folderName $subFldName
+
+        $x = Export-Certificate -Cert $item -FilePath ($subFldName + '\'+$orgName+'.cer')
+        
+        $thumbprintFile = $subFldName + '\thumbprint.txt'
+        $x = New-Item $thumbprintFile -Force
+        $x = Set-Content $thumbprintFile $item.Thumbprint  
     }
 }
 #################################################################################################################################
@@ -591,6 +624,7 @@ function launcher_conf()
 clear
 
 $x = create_folder -folderName $exportFolder
+$x = create_folder -folderName $exportCerFolder
 $x = create_folder -folderName $importFolder
 $x = create_folder -folderName $sortFolder
 
@@ -602,6 +636,12 @@ if ($args.Count -gt 0)
         {
             # --- Экспортируем все сертификаты текущего пользователя в каталог $exportFolder
             export_certs
+        }
+
+        '-exportOpenKeys'
+        {
+            # --- Экспортируем все открытые части сертифиеатов и их отпечатки
+            export_open_keys
         }
 
         '-import'
@@ -666,3 +706,5 @@ if ($args.Count -gt 0)
 #launcher_conf
 
 #find_expiring2 14 ''
+
+export_open_keys
