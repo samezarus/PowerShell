@@ -349,8 +349,18 @@ function get_expiring_days($cert)
     $dict.Add('CN'     , $CN)
     $dict.Add('SN'     , $SN)
     $dict.Add('G'      , $G)
+    $dict.Add('cert'   , $cert)
 
     return $dict
+}
+#################################################################################################################################
+function get_cert_parent($cert)
+{
+    # Получаем организацию выпустившую сертификат
+
+    #Write-Host ($cert | Format-List | Out-String)
+    $params = get_subject_params $cert.Issuer
+    return $params['CN']
 }
 #################################################################################################################################
 function get_expirings_days($certs)
@@ -448,7 +458,9 @@ function find_expiring2($interval, $trapName)
 
             if ($expDays -le $interval)
             {
-                $msg = 'Организация: '+$item['CN'] + '; ИНН: ' + $item['INN'] + '; Руководитель: '+ $item['SN']+ ' ' + $item['G'] + '; Заканчивается через: ' + $expDays
+                $certParent = get_cert_parent -cert $item['cert']
+                #$msg = 'Организация: '+$item['CN'] + '; ИНН: ' + $item['INN'] + '; Руководитель: '+ $item['SN']+ ' ' + $item['G'] + '; Заканчивается через: ' + $expDays
+                $msg = 'Организация: '+$item['CN'] + '; ИНН: ' + $item['INN'] + '; Руководитель: '+ $item['SN']+ ' ' + $item['G'] +'; Выпустил: ' + $certParent + '; Заканчивается через: ' + $expDays            
 
                 if (($trapName -ne '') -and ($trapName -ne $null))
                 {
@@ -695,12 +707,15 @@ if ($args.Count -gt 0)
 #export_certs
 
 # --- 2
-#remove_all_certs
+#export_open_keys
 
 # --- 3
-#import_certs_from_reg_files
+#remove_all_certs
 
 # --- 4
+#import_certs_from_reg_files
+
+# --- 5
 #certs_sort
 
 #launcher_conf
@@ -708,3 +723,5 @@ if ($args.Count -gt 0)
 #find_expiring2 14 ''
 
 #export_open_keys
+
+#get_cert_parent ''
