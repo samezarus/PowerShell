@@ -55,6 +55,7 @@ clear
 $exportFolder    = $PSScriptRoot+'\export_certs' # Каталог выгрузки сертификатов (*.reg - открытая и закрытая часть)
 $exportCerFolder = $exportFolder+'\open_keys'    # Каталог выгрузки открытых ключей
 $importFolder    = $PSScriptRoot+'\import_certs' # Каталог загрузки сертификатов
+$importFolderW7  = 'c:\temp\import_certs'        # Каталог загрузки сертификатов
 $sortFolder      = $PSScriptRoot+'\sort_certs'   # Каталог для отсортированных сертификатов
 #
 $serversFile = $PSScriptRoot + '\servers.txt' # Файл со списком сопоставления серверов к ФИО руководителя
@@ -73,7 +74,7 @@ $certsLocation = 'cert:\CurrentUser\My' # Путь к хранилищу "Лич
 #
 $zabbixSender = 'C:\Zabbix Agent\bin\win64\zabbix_sender.exe'
 $zabbixServer = '192.168.10.209'
-$senderHost   = 'vl20-cert'
+$senderHost   = 'certs'
 $trapName     = 'certs_expiring'
 
 #################################################################################################################################
@@ -662,6 +663,13 @@ if ($args.Count -gt 0)
             import_certs_from_reg_files
         }
 
+        '-import_w7'
+        {
+            # --- Импортируем все сертификаты текущему пользователю из каталога $importFolder (для windows7)
+            $importFolder = $importFolderW7
+            import_certs_from_reg_files
+        }
+
         '-clear'
         {
             # --- Удаляем все сертификаты у текущего пользователя
@@ -720,7 +728,7 @@ if ($args.Count -gt 0)
 
 #launcher_conf
 
-#find_expiring2 14 ''
+#find_expiring2 14 'certs_expiring'
 
 #export_open_keys
 
