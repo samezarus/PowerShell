@@ -26,6 +26,9 @@ telegram https://t.me/sameza
     -certs_sort 
         !!! ОЧЕНЬ ОСТОРОЖНО !!! Сортирует сертификаты по ФИО
 
+    -rar_import
+        Добавляет сертификаты из папки importFolder в архив 
+
 --------------------------------------------------------------------------------------------------
 
 Порядок работы со скриптом:
@@ -52,11 +55,12 @@ telegram https://t.me/sameza
 #>
 clear
 
-$exportFolder    = $PSScriptRoot+'\export_certs' # Каталог выгрузки сертификатов (*.reg - открытая и закрытая часть)
-$exportCerFolder = $exportFolder+'\open_keys'    # Каталог выгрузки открытых ключей
-$importFolder    = $PSScriptRoot+'\import_certs' # Каталог загрузки сертификатов
-$importFolderW7  = 'c:\temp\import_certs'        # Каталог загрузки сертификатов
-$sortFolder      = $PSScriptRoot+'\sort_certs'   # Каталог для отсортированных сертификатов
+$exportFolder    = $PSScriptRoot+'\export_certs'            # Каталог выгрузки сертификатов (*.reg - открытая и закрытая часть)
+$exportCerFolder = $exportFolder+'\open_keys'               # Каталог выгрузки открытых ключей
+$importFolder    = $PSScriptRoot+'\import_certs'            # Каталог загрузки сертификатов
+$importFolderW7  = '\\certs\c$\BuhgSoft\Certs\import_certs' # Каталог загрузки сертификатов
+$sortFolder      = $PSScriptRoot+'\sort_certs'              # Каталог для отсортированных сертификатов
+$arcFolder       = $PSScriptRoot+'\arc_certs'               # Каталг для архивирования импортируемых сертификатов
 #
 $serversFile = $PSScriptRoot + '\servers.txt' # Файл со списком сопоставления серверов к ФИО руководителя
 #
@@ -76,6 +80,8 @@ $zabbixSender = 'C:\Zabbix Agent\bin\win64\zabbix_sender.exe'
 $zabbixServer = '192.168.10.209'
 $senderHost   = 'certs'
 $trapName     = 'certs_expiring'
+#
+$rar = 'C:\Program Files\WinRAR\Rar.exe'
 
 #################################################################################################################################
 #################################################################################################################################
@@ -106,6 +112,17 @@ function time_stamp()
 {
     $result = (Get-Date -format 'yyyyMMddHHmmssfff').ToString()
     return $result
+}
+#################################################################################################################################
+function imports_to_rar()
+{
+    if (Test-Path $rar)
+    {
+        cd $arcFolder
+        $fn = time_stamp + '.rar'
+
+        $x = &$rar a -r $fn $importFolder
+    }
 }
 #################################################################################################################################
 function create_folder($folderName)
@@ -397,10 +414,13 @@ function ConvertTo-Encoding ([string]$From, [string]$To)
 #################################################################################################################################
 function send_to_zabbix ($tName, $msg)
 {
-    $msg = $msg | ConvertTo-Encoding 'windows-1251' 'utf-8'
-    $msg = clear_string -s $msg
-    $msg = $msg.Replace('"', '')
-    &$zabbixSender -z $zabbixServer -s $senderHost -k $tName -o $msg
+    if (Test-Path $zabbixSender)
+    {
+        $msg = $msg | ConvertTo-Encoding 'windows-1251' 'utf-8'
+        $msg = clear_string -s $msg
+        $msg = $msg.Replace('"', '')
+        &$zabbixSender -z $zabbixServer -s $senderHost -k $tName -o $msg
+    }
 }
 #################################################################################################################################
 function find_expiring($interval, $trapName)
@@ -640,6 +660,7 @@ $x = create_folder -folderName $exportFolder
 $x = create_folder -folderName $exportCerFolder
 $x = create_folder -folderName $importFolder
 $x = create_folder -folderName $sortFolder
+$x = create_folder -folderName $arcFolder
 
 if ($args.Count -gt 0)
 {
@@ -708,6 +729,13 @@ if ($args.Count -gt 0)
             
             launcher_conf
         }
+
+        '-rar_import'
+        {
+            # --- Конфигурация лаунчера
+            
+            imports_to_rar
+        }
     }
 }
 
@@ -733,3 +761,5 @@ if ($args.Count -gt 0)
 #export_open_keys
 
 #get_cert_parent ''
+
+#imports_to_rar
