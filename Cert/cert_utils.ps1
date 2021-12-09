@@ -29,6 +29,12 @@ telegram https://t.me/sameza
     -rar_import
         Добавляет сертификаты из папки importFolder в архив 
 
+    -orgcsv
+        Формирует CSV-файл по всем организациям
+
+    -setspass
+        Установка пароля из глобальной переменной $pass
+
 --------------------------------------------------------------------------------------------------
 
 Порядок работы со скриптом:
@@ -53,16 +59,32 @@ telegram https://t.me/sameza
                 
         "C:\temp\cert_utils.ps1 -certs_sort"
 #>
+Add-Type -AssemblyName System.Web
+
+
 clear
 
-$exportFolder    = $PSScriptRoot+'\export_certs'            # Каталог выгрузки сертификатов (*.reg - открытая и закрытая часть)
+
+function Get-ScriptDirectory {
+    if ($psise) {
+        Split-Path $psise.CurrentFile.FullPath
+    }
+    else {
+        $global:PSScriptRoot
+    }
+}
+
+$scriptDir = Get-ScriptDirectory
+
+$exportFolder    = $scriptDir+'\export_certs'            # Каталог выгрузки сертификатов (*.reg - открытая и закрытая часть)
 $exportCerFolder = $exportFolder+'\open_keys'               # Каталог выгрузки открытых ключей
-$importFolder    = $PSScriptRoot+'\import_certs'            # Каталог загрузки сертификатов
+$importFolder    = $scriptDir+'\import_certs'            # Каталог загрузки сертификатов
 $importFolderW7  = '\\certs\c$\BuhgSoft\Certs\import_certs' # Каталог загрузки сертификатов
-$sortFolder      = $PSScriptRoot+'\sort_certs'              # Каталог для отсортированных сертификатов
-$arcFolder       = $PSScriptRoot+'\arc_certs'               # Каталг для архивирования импортируемых сертификатов
+$sortFolder      = $scriptDir+'\sort_certs'              # Каталог для отсортированных сертификатов
+$arcFolder       = $scriptDir+'\arc_certs'               # Каталг для архивирования импортируемых сертификатов
 #
-$serversFile = $PSScriptRoot + '\servers.txt' # Файл со списком сопоставления серверов к ФИО руководителя
+$serversFile = $scriptDir + '\servers.txt' # Файл со списком сопоставления серверов к ФИО руководителя
+$launcherFolder = 'C:\BuhgSoft\Launcher\fio2'
 #
 $userName = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name # Получение имени текущей учетной записи
 #
@@ -80,12 +102,17 @@ $zabbixSender = 'C:\Zabbix Agent\bin\win64\zabbix_sender.exe'
 $zabbixServer = '192.168.10.209'
 $senderHost   = 'certs'
 $trapName     = 'certs_expiring'
+$trapAuto     = 'CertProcessing' # для автодескавери
+#
+$zabbixServer = 'http://zabbix4/zabbix/zabbix_sender/index.php?'
+$zabbixHost   = 'certs'
+$trapAuto     = 'CertProcessing' # для автодескавери
 #
 $rar = 'C:\Program Files\WinRAR\Rar.exe'
+#
+$pass = 'Remi1535'
 
-#################################################################################################################################
-#################################################################################################################################
-#################################################################################################################################
+
 function clear_string($s)
 {
     # Очишает строку от спецсимволов
@@ -107,13 +134,15 @@ function clear_string($s)
 
     return $result
 }
-#################################################################################################################################
+
+
 function time_stamp()
 {
     $result = (Get-Date -format 'yyyyMMddHHmmssfff').ToString()
     return $result
 }
-#################################################################################################################################
+
+
 function imports_to_rar()
 {
     if (Test-Path $rar)
@@ -124,7 +153,8 @@ function imports_to_rar()
         $x = &$rar a -r $fn $importFolder
     }
 }
-#################################################################################################################################
+
+
 function create_folder($folderName)
 {
     $result = $false
@@ -137,7 +167,8 @@ function create_folder($folderName)
 
     return $result
 }
-#################################################################################################################################
+
+
 function export_certs()
 {
     # Экспорт сертификатов текущего пользователя из ветки реестра в каталог $exportFolder с именем в виде таймстемпа
@@ -155,7 +186,8 @@ function export_certs()
 	    reg.exe export $keyPath $exportFilePath "/y"
     }
 }
-#################################################################################################################################
+
+
 function export_open_keys()
 {
     $certs = get_certs_list
@@ -182,14 +214,16 @@ function export_open_keys()
         $x = Set-Content $thumbprintFile $item.Thumbprint  
     }
 }
-#################################################################################################################################
+
+
 function get_certs_list()
 {
     # Получение списка сертификата из хранилища "Личное"
 
     return Get-ChildItem -Path $certsLocation -Recurse
 }
-#################################################################################################################################
+
+
 function remove_all_certs()
 {
     # Удаляем все публичные и приватные ключи
@@ -212,7 +246,8 @@ function remove_all_certs()
         reg.exe delete $item.Name /f
     }
 }
-#################################################################################################################################
+
+
 function remove_by_fio($fio)
 {
     # отложено !!!
@@ -226,7 +261,8 @@ function remove_by_fio($fio)
         '-------------------------------'
     }
 }
-#################################################################################################################################
+
+
 function import_cert_from_reg_file($regFile)
 {
     $keyFilePath = $regFile.FullName
@@ -261,12 +297,12 @@ function import_cert_from_reg_file($regFile)
         reg import $keyFilePath
 
         # Устанавливаем сертификат открытой части ключа в реестр
-        $ts = time_stamp
         $cont = '\\.\REGISTRY\' + $orgStr
         &'C:\Program Files\Crypto Pro\CSP\csptest.exe' -property -cinstall -cont $cont
     }
 }
-#################################################################################################################################
+
+
 function import_certs_from_reg_files()
 {
     # Импортирование всех сертификатов текущему пользователю из каталога $certsFolder
@@ -278,7 +314,8 @@ function import_certs_from_reg_files()
         import_cert_from_reg_file -regFile $item
     }
 }
-#################################################################################################################################
+
+
 function get_subject_params($subject)
 {
     # Возвращает элементы как минимум со следующими параметрами:
@@ -330,20 +367,61 @@ function get_subject_params($subject)
 
     return $dict
 }
-#################################################################################################################################
-function get_subjects_params($certs)
-{
-    $paramsList = New-Object System.Collections.ArrayList
 
-    foreach ($item in $certs)
+
+function get_subject_params($subject)
+{
+    # Возвращает элементы как минимум со следующими параметрами:
+    # ОГРН
+    # СНИЛС
+    # ИНН
+    # E      - Эл. почта
+    # CN     - Название организации
+    # T      - Должность
+    # SN     - Фамилия
+    # G      - Имя, Отчество
+    # S      - Край/Область
+    # L      - Город
+    # STREET - Улица  
+
+    $s = $subject + ','
+    $s = clear_string -s $s
+
+    $dict = @{}
+
+    $a = 0
+    For ($i=0; $i -le $s.Length +1; $i++)
     {
-        $params = get_subject_params -subject $item.Subject
-        $x = $paramsList.Add($params)
+        if ($s[$i] -eq '=')
+        {
+            $key = $s.Substring($a, $i -$a)
+            $b = $i +1
+        }
+        
+        if ($s[$i] -eq ',')
+        {
+            $value = $s.Substring($b, $i -$b)
+            if ($value[0] -eq '"')
+            {
+                if ($s[$i -1] -ne '"')
+                {
+                    continue
+                }
+            }   
+            $a = $i+2 
+
+
+            if ($key -ne 'STREET') # Проблема с обработкой параметра STREET
+            {
+                $dict.Add($key, $value)
+            }
+        }
     }
-    
-    return $paramsList
+
+    return $dict
 }
-#################################################################################################################################
+
+
 function get_expiring_days($cert)
 {
     # Получение остатка дней (но так же и сопутствующую информацию), через который истечёт сертификат
@@ -356,9 +434,17 @@ function get_expiring_days($cert)
 
     $params = get_subject_params -subject $cert.Subject
     $INN = $params['ИНН']
+    $SNILS = $params['СНИЛС']
     $CN  = $params['CN']
     $SN  = $params['SN']
     $G   = $params['G']
+
+
+    if($INN -eq "")
+    {
+       $INN = "123" 
+    }
+
 
     $dict = @{}
 
@@ -368,10 +454,12 @@ function get_expiring_days($cert)
     $dict.Add('SN'     , $SN)
     $dict.Add('G'      , $G)
     $dict.Add('cert'   , $cert)
+    $dict.Add('SNILS'  , $SNILS)
 
     return $dict
 }
-#################################################################################################################################
+
+
 function get_cert_parent($cert)
 {
     # Получаем организацию выпустившую сертификат
@@ -380,7 +468,8 @@ function get_cert_parent($cert)
     $params = get_subject_params $cert.Issuer
     return $params['CN']
 }
-#################################################################################################################################
+
+
 function get_expirings_days($certs)
 {
     # Выборка всех сертификатов(хранящихся в реестре) с остатками дней действия
@@ -395,7 +484,8 @@ function get_expirings_days($certs)
 
     return $paramsList
 }
-#################################################################################################################################
+
+
 function ConvertTo-Encoding ([string]$From, [string]$To)
 {  
     # https://social.technet.microsoft.com/Forums/ru-RU/9f84de0e-f68c-446a-bc07-f079d98e7b7b/powershell-108710861087108810721074108010901100?forum=scrlangru
@@ -411,7 +501,8 @@ function ConvertTo-Encoding ([string]$From, [string]$To)
         $encTo.GetString($bytes)  
     }  
 } 
-#################################################################################################################################
+
+
 function send_to_zabbix ($tName, $msg)
 {
     if (Test-Path $zabbixSender)
@@ -422,7 +513,15 @@ function send_to_zabbix ($tName, $msg)
         &$zabbixSender -z $zabbixServer -s $senderHost -k $tName -o $msg
     }
 }
-#################################################################################################################################
+
+
+function send_to_zabbix_web ($tName, $msg)
+{    
+    $url = $zabbixServer + 'server=' + $zabbixHost + '&key=' + $tName + '&value=' + $msg
+    $x = Invoke-WebRequest -UseBasicParsing $url
+}
+
+
 function find_expiring($interval, $trapName)
 {
     # если $trapName пустая строка, то не посылаем в zabbix
@@ -447,7 +546,8 @@ function find_expiring($interval, $trapName)
         }
     }
 }
-#################################################################################################################################
+
+
 function find_expiring2($interval, $trapName)
 {
     # Суть функции с индексом 2, в том что может случится ситуация, при которой у одной организации
@@ -468,7 +568,7 @@ function find_expiring2($interval, $trapName)
 
             foreach($item2 in $subExpiringsList)
             {
-                if ($item['INN'] -eq $item2['INN'] )
+                if ($item['SNILS'] -eq $item2['SNILS'] )
                 {
                     if ($item2['expDays'] -gt $expDays)
                     {
@@ -476,17 +576,35 @@ function find_expiring2($interval, $trapName)
                     }
                 }
             }
+            
 
             if ($expDays -le $interval)
             {
+                foreach($si in $item['cert'])
+                {
+                    "    "+$si
+                }
+                
                 $certParent = get_cert_parent -cert $item['cert']
                 #$msg = 'Организация: '+$item['CN'] + '; ИНН: ' + $item['INN'] + '; Руководитель: '+ $item['SN']+ ' ' + $item['G'] + '; Заканчивается через: ' + $expDays
                 $msg = 'Организация: '+$item['CN'] + '; ИНН: ' + $item['INN'] + '; Руководитель: '+ $item['SN']+ ' ' + $item['G'] +'; Выпустил: ' + $certParent + '; Заканчивается через: ' + $expDays            
+                #$msg = 'Организация: '+$item['CN'] + '; СНИЛС: ' + $item['SNILS'] + '; Руководитель: '+ $item['SN']+ ' ' + $item['G'] +'; Выпустил: ' + $certParent + '; Заканчивается через: ' + $expDays            
 
                 if (($trapName -ne '') -and ($trapName -ne $null))
                 {
-                    send_to_zabbix -tName $trapName -msg $msg
+                    #send_to_zabbix -tName $trapName -msg $msg
                 }
+
+                $fio = $item['SN']+ ' ' + $item['G']
+
+                # Создаём/обновляем элемент автообнаружения
+                create_zabbix_auto_detect_item -inn $item['INN'] -cn $item['CN'] -fio $fio
+
+                # Генерируем алерт для данного сертификата
+                $dinamTrap = 'cert['+$item['INN']+']'
+
+                send_to_zabbix_web -tName $dinamTrap -msg $expDays
+
 
                 $msg
                 '------------------------------------------------'
@@ -494,7 +612,185 @@ function find_expiring2($interval, $trapName)
         }
     }
 }
-#################################################################################################################################
+
+
+function get_ext_sert($cert_item)
+{
+    # Функция получает параметры сертификата из поля Subject
+    # Форматирует и ищет ИНН в сертификатах нового типа
+    # Дополняет параметры свойства вне Subject
+    
+    $subject = $cert_item.Subject
+
+    $new_str = ""
+    $char = ""
+    $wsc = 0
+    
+    #  Очистка строки от запятых в тексте, что бы оставить только разделяющие запятые
+    for ($i=0; $i -le $subject.Length +1; $i++)
+    {
+        $char = $subject[$i]
+
+        if($char -eq '"')
+        {
+            $wsc += 1
+        }
+        
+        if($char -eq ',')
+        {
+            if(($wsc % 2) -ne 0)
+            {
+                $char = '.'
+            }
+        }
+
+        $new_str += $char
+    }
+
+    # Избавляемся от ковычек и от пробелов в разделителях
+    $new_str = $new_str.Replace('"', '')
+    $new_str = $new_str.Replace(", ", ',')
+    
+    
+    # Получение списка key=value строк
+    $kv_list = $new_str.Split(",")
+    
+    # Формирование результирующего словаря
+    $dict = @{}
+    $dict.Add('cert_object', $cert_item) # Добавляем объект текущего сертификата
+
+    $dateMask = 'yyyy.MM.dd'
+    $eDate = $cert_item.NotAfter | Get-Date -Format $dateMask  # Действует до
+    $exp = New-TimeSpan -End $eDate
+    $dict.Add('expiring_days', $exp.Days) # Количество дней действия сертификата
+
+    foreach($kv_item in $kv_list)
+    {
+        $kv = $kv_item.Split('=')
+        $key = $kv[0]
+        $value = $kv[1]
+        $dict.Add($key, $value) 
+    }
+
+    # Очистка ИНН от нолей и находжение ИНН в новых сертификатах из параметра OID.1.2.840.113549.1.9.2
+    if("OID.1.2.840.113549.1.9.2" -in $dict.Keys) # Переходной или новый сертификат
+    {
+        $p = $dict["OID.1.2.840.113549.1.9.2"]
+        $l = $p.Split('-')
+        $dict["ИНН"] = $l[0]
+    }
+    else # Старый сертификат
+    {
+        $inn = $dict["ИНН"]
+        $p = -1
+        for ($i=0; $i -le $inn.length +1; $i++)
+        {
+            if($inn[$i] -eq '0')
+            {
+                $p = $i 
+            }
+            else
+            {
+                $dict["ИНН"] = $inn.substring($p +1, $inn.length -$p -1)
+                break
+            }
+        }
+    }
+
+    return $dict
+}
+
+
+function get_ext_serts_list()
+{
+    $list = @()
+    
+    $certs = get_certs_list
+    foreach($c in $certs)
+    {
+        $ext = get_ext_sert $c
+        $list += $ext
+    }
+
+    return $list
+}
+
+
+function find_expiring3($interval, $trapName)
+{
+    $expiringsList    = get_ext_serts_list
+    $subExpiringsList = get_ext_serts_list
+
+    foreach ($item in $expiringsList)
+    {
+        #$item["CN"] + " - " + $item["ИНН"] + " - " + $item["expiring_days"]
+        
+        if ($item['expiring_days'] -gt 0) # Если остаток действия дней сертификата больше 0
+        {
+            $expDays = $item['expiring_days']  
+
+            foreach($item2 in $subExpiringsList)
+            {
+                if (($item['ОГРН'] -eq $item2['ОГРН']) -and ($item['ОГРНИП'] -eq $item2['ОГРНИП']))
+                {
+                    if ($item2['expiring_days'] -gt $expDays)
+                    {
+                        $expDays = $item2['expiring_days']  
+                    }
+                }
+            }
+            
+
+            if($expDays -le $interval)
+            {
+                foreach($si in $item['cert'])
+                {
+                    "    "+$si
+                }
+
+                $ogrn = ""
+
+                if("ОГРН" -in $item.Keys)
+                {
+                    $ogrn = $item["ОГРН"]
+                }
+
+                if("ОГРНИП" -in $item.Keys)
+                {
+                    $ogrn = $item["ОГРНИП"]
+                }
+
+                
+                $certParent = get_cert_parent -cert $item['cert_object']
+                #$msg = 'Организация: '+$item['CN'] + '; ИНН: ' + $item['INN'] + '; Руководитель: '+ $item['SN']+ ' ' + $item['G'] + '; Заканчивается через: ' + $expDays
+                #$msg = 'Организация: '+$item['CN'] + '; ИНН: ' + $item['INN'] + '; Руководитель: '+ $item['SN']+ ' ' + $item['G'] +'; Выпустил: ' + $certParent + '; Заканчивается через: ' + $expDays            
+                #$msg = 'Организация: '+$item['CN'] + '; ОГРН/ОГРНИП: ' + $item['ИНН'] + '; Руководитель: '+ $item['SN']+ ' ' + $item['G'] +'; Выпустил: ' + $certParent + '; Заканчивается через: ' + $expDays            
+                $msg = 'Организация: '+$item['CN'] + '; ОГРН/ОГРНИП: ' + $ogrn + '; Руководитель: '+ $item['SN']+ ' ' + $item['G'] +'; Выпустил: ' + $certParent + '; Заканчивается через: ' + $expDays            
+
+                if (($trapName -ne '') -and ($trapName -ne $null))
+                {
+                    #send_to_zabbix -tName $trapName -msg $msg
+                }
+
+                $fio = $item['SN']+ ' ' + $item['G']
+
+                # Создаём/обновляем элемент автообнаружения
+                #create_zabbix_auto_detect_item -inn $item['ИНН'] -cn $item['CN'] -fio $fio
+
+                # Генерируем алерт для данного сертификата
+                #$dinamTrap = 'cert['+$item['ИНН']+']'
+
+                #send_to_zabbix_web -tName $dinamTrap -msg $expDays
+
+
+                $msg
+                '------------------------------------------------'
+            }
+        }
+    }
+}
+
+
 function sort_certs()
 {   
     # При первом запуске !!! Если не было экспорта, то его надо обязательно сделать !!!!!!!!
@@ -540,119 +836,188 @@ function sort_certs()
         import_certs_from_reg_files
     }
 }
-#################################################################################################################################
-# -------------------------------------------------------------------------------------------------------------------------------
-#################################################################################################################################
-function get_launcher_dir()
+
+
+function get_org_name($keyRegPath)
 {
-    $result = $PSScriptRoot
+    $result = ''
+    
+    $findTerm = '[HKEY_LOCAL_MACHINE'
 
-    Set-Location $PSScriptRoot
-
-    $result = '..\'+$PSScriptRoot
-
-    Set-Location -Path '..\'
-
-    $result = Get-Location
-
-    Set-Location $PSScriptRoot
-
-    $result = $result.Path + '\Launcher\'
+    $result = $keyRegPath.split('\')
+    $result = $result[8]
 
     return $result
 }
-#################################################################################################################################
-function find_in_file($fileName, $searchString, $findFl)
+
+
+function set_pass_to_certs($pass)
 {
-    # $findFl - флаг алгоритма поиска 0 - жёсткое соответствие строки, 1 - содержится в строке
-    #
-    $result = $false
-    
-    $stringList = Get-Content $fileName
-    foreach ($item in $stringList)
+    $serts = Get-ChildItem -Path $userKeysPath -Recurse
+   
+    foreach ($item in $serts)
     {
-        if($findFl -eq 0)
-        {
-            if($item -eq $searchString)
-            {
-                $result = $true
-                break
-            }
-        }
-        #
-        if($findFl -eq 1)
-        {
-            if($item.indexOf($searchString) -ne -1)
-            {
-                $result = $true
-                break
-            }
-        }
+        $orgName = get_org_name $item.Name
+         if ($orgName -ne '')
+         {
+            $cont = '\\.\REGISTRY\' + $orgName
+            &'C:\Program Files\Crypto Pro\CSP\csptest.exe' -passwd -cont $cont -change $pass -pin "" 
+         }
+    }
+}
+
+
+function ip_detect($subject)
+{
+    # Функция определяет является ли сертефикат выданным на ИП или нет
+
+    $result = $false
+
+    $p = $subject.indexof("ОГРНИП")
+    if ($p -ne -1)
+    {
+        $result = $true
     }
 
     return $result
 }
-#################################################################################################################################
+
+
+function create_zabbix_auto_detect_item($inn, $cn, $fio)
+{
+    if ($fio -eq $cn)
+    {
+        #$cn = 'ИП ' + $cn
+        $fio = '' 
+    }
+    else
+    {
+        $fio = ' [' + $fio + ']' 
+    }
+
+    $s = '{"data":[{"{#MX}":"' + $inn + '","{#MXNAME}":"' + $cn + $fio + '"}]}'
+
+    $msg = [System.Web.HTTPUtility]::UrlEncode($s)
+
+    $x = send_to_zabbix_web -tName $trapAuto -msg $msg
+}
+
+
+function auto_detect_items_to_zabbix()
+{
+    foreach ($item in get_certs_list)
+    {
+        $res = get_subject_params -subject $item.subject
+
+        $inn = $res['ИНН']
+        $cn = $res['CN']
+        $fio = $res['SN'] + ' ' + $res['G']
+
+        $x = create_zabbix_auto_detect_item -inn $inn -cn $cn -fio $fio
+    }
+}
+
+# -------------------------------------------------------------------------------------------------------------------------------
+
+
 function launcher_conf()
 {
-    # Конфигурирование лаунчера
-
-    $certs = get_certs_list
+    $serts = get_certs_list
+    $fiosArr = @() # массив
     
-    $launcherDir = get_launcher_dir
-
-    $launcherFioDir = $launcherDir + '\fio\'
-    $x              = New-Item -Path $launcherFioDir -ItemType "directory" -Force
-
+    foreach ($item in $serts)
+    {
+        $subject = get_subject_params -subject $item.Subject
+        $fio = $subject['SN'] +' '+ $subject['G']
+        
+        if (!($fiosArr -contains $fio))
+        {
+            $fiosArr += $fio
+        }
+    }
+    
     # Удаляем все файлы
-    $filesList = Get-Childitem -Path $launcherFioDir
+    $filesList = Get-Childitem -Path $launcherFolder
     foreach ($item in $filesList)
     {
         Remove-Item -path $item.FullName -Recurse -Force
     }
 
-    
-    foreach ($item in $certs)
+    foreach ($item in $fiosArr)
     {
-        $params = get_subject_params -subject $item.Subject
-        $fio    = $params['SN'] +' ' +$params['G']
-        $inn    = $params['ИНН']
-        
-        # --- Создаём структуру каталогов с ФИО владельцев сертификатов 
-        $fioDir = $cert_sort +$fio
+        $fioFile = $launcherFolder + '\'+$item+'.txt'
+        $x = New-Item -Path $fioFile -ItemType File -Force
+        #'server=' | out-file -filepath $fioFile -Append 
+        $item +':'
+        $orgsArr = @() # массив
 
-        # --- Создаём структуру каталогов по ФИО
-        $fioDir = $launcherFioDir + $fio
-        $x = New-Item -Path $fioDir -ItemType "directory" -Force
-        
-        $orgName = $params['CN'].replace('"', '') # Наименование организации
-        $orgFile = $fioDir + '\' + $orgName + '_' + $inn + '.txt'
-        $x = New-Item -Path $orgFile -ItemType File -Force # Файл с имемнем организации
-
-        'fio=' + $fio | out-file -filepath $orgFile -Append 
-        'inn=' + $inn | out-file -filepath $orgFile -Append  
-
-        # --- Создаём/дополняем ФИО в файл с ip-адресам серверов 
-
-        if ((Test-Path $serversFile) -ne $true)
+        foreach ($item2 in $serts)
         {
-            $x = New-Item -Path $serversFile -ItemType File -Force
+            $subject = get_subject_params -subject $item2.Subject
+            $fio = $subject['SN'] +' '+ $subject['G']
+            
+            $orgName = $subject['CN']
+            if ($item -eq $fio)
+            {
+                if (!($orgsArr -contains $orgName))
+                {
+                    $orgsArr += $orgName
+                }
+            }
         }
+        $orgsArr | out-file -filepath $fioFile -Append
+        #$orgsArr 
+        #'-------------------'
+    }
+}
 
-        $fio = $fio +'='
+
+function orgs_to_csv()
+{
+    $serts = get_certs_list
+    $fiosArr = @() # массив
+    
+    foreach ($item in $serts)
+    {
+        $subject = get_subject_params -subject $item.Subject
+        $fio = $subject['SN'] +' '+ $subject['G']
         
-        $findFl = find_in_file -fileName $serversFile -searchString $fio -findFl 1
-        if ($findFl -eq $false)
-        { 
-            $fio | out-file -filepath $serversFile -Append   
+        if (!($fiosArr -contains $fio))
+        {
+            $fiosArr += $fio
         }
     }
 
-    Copy-Item -Path $serversFile -Destination $launcherDir -Force
+    $orgsFile = $scriptDir + '\orgs.csv'
+    Remove-Item $orgsFile -Force
+    $x = New-Item -Path $orgsFile -ItemType File -Force
+
+    foreach ($item in $fiosArr)
+    {
+        $orgsArr = @() # массив
+
+        foreach ($item2 in $serts)
+        {
+            $subject = get_subject_params -subject $item2.Subject
+            $fio = $subject['SN'] +' '+ $subject['G']
+            
+            $orgName = $subject['CN']
+            if ($item -eq $fio)
+            {
+                if (!($orgsArr -contains $orgName))
+                {
+                    $s = $item + '; '+ $orgName + '; ' + $subject['E'] +'; '+ (get_cert_parent $item2)
+                    $s | out-file -FilePath $orgsFile -Append
+
+                    $orgsArr += $orgName
+                }
+            }
+        }
+    }
 }
+
 #################################################################################################################################
-#################################################################################################################################
-#################################################################################################################################
+
 
 clear
 
@@ -668,39 +1033,32 @@ if ($args.Count -gt 0)
     {
         '-export'
         {
-            # --- Экспортируем все сертификаты текущего пользователя в каталог $exportFolder
             export_certs
         }
 
         '-exportOpenKeys'
         {
-            # --- Экспортируем все открытые части сертифиеатов и их отпечатки
             export_open_keys
         }
 
         '-import'
         {
-            # --- Импортируем все сертификаты текущему пользователю из каталога $importFolder
             import_certs_from_reg_files
         }
 
         '-import_w7'
         {
-            # --- Импортируем все сертификаты текущему пользователю из каталога $importFolder (для windows7)
             $importFolder = $importFolderW7
             import_certs_from_reg_files
         }
 
         '-clear'
         {
-            # --- Удаляем все сертификаты у текущего пользователя
             remove_all_certs
         }
 
         '-expiring'
         {
-            # --- Выводим сертификаты у которых истекает срок действия через $interval ($args[1])
-            
             if ($args.Count -gt 1)
             {
                 $interval = $args[1]
@@ -712,7 +1070,8 @@ if ($args.Count -gt 0)
                 $tName    = ''
             }
 
-            find_expiring2 -interval $interval -trapName $tName
+            #find_expiring2 -interval $interval -trapName $tName
+            find_expiring3 -interval $interval -trapName $tName
         }
 
         '-sort'
@@ -725,16 +1084,22 @@ if ($args.Count -gt 0)
 
         '-conf'
         {
-            # --- Конфигурация лаунчера
-            
             launcher_conf
         }
 
         '-rar_import'
-        {
-            # --- Конфигурация лаунчера
-            
+        {   
             imports_to_rar
+        }
+
+        '-orgcsv'
+        {
+            orgs_to_csv
+        }
+
+        '-setspass'
+        {
+            set_pass_to_certs -pass $pass
         }
     }
 }
@@ -756,6 +1121,8 @@ if ($args.Count -gt 0)
 
 #launcher_conf
 
+#find_expiring2 60
+
 #find_expiring2 14 'certs_expiring'
 
 #export_open_keys
@@ -763,3 +1130,11 @@ if ($args.Count -gt 0)
 #get_cert_parent ''
 
 #imports_to_rar
+
+#orgs_to_csv
+
+#set_pass_to_certs $pass
+
+#auto_detect_items_to_zabbix
+
+#find_expiring3 60
